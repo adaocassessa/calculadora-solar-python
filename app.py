@@ -3,11 +3,11 @@ import math
 
 st.set_page_config(page_title="EcoRenováveis Pro - Global", page_icon="🌍", layout="wide")
 
-st.title("🌍 EcoRenováveis Pro: Engenharia Global")
-st.write("Plataforma de dimensionamento de sistemas, grandes barragens e estimativa de potencial energético regional.")
+st.title("🌍 EcoRenováveis Pro: Engenharia e Gestão")
+st.write("Plataforma de dimensionamento, potencial energético, gestão de serviços e manutenção.")
 
-# Criando as abas
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+# Criando as abas (Agora com 10 abas)
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
     "☀️ Solar Fotovoltaico", 
     "🌬️ Energia Eólica", 
     "💧 Hídrica (Micro e Grandes)",
@@ -15,7 +15,9 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "⚡ Eletrotécnica",
     "🔋 Baterias",
     "🗺️ Potencial Macroeconómico",
-    "📚 Guia do Técnico"
+    "🛠️ Serviços e Manutenção",
+    "📚 Guia do Técnico",
+    "💼 Meu Negócio (Faturamento)"
 ])
 
 # Variáveis globais
@@ -34,21 +36,18 @@ with tab1:
         performance_ratio = st.slider("Performance Ratio", min_value=0.60, max_value=0.95, value=0.80, step=0.01)
 
     st.subheader("Escolha do Painel Solar")
-    
-    # NOVIDADE AQUI: Seletor de Tecnologia do Painel
     tipo_painel = st.selectbox("Tecnologia do Painel", [
         "Monocristalino (Alta Eficiência - Telhados pequenos)", 
         "Policristalino (Custo-benefício - Telhados grandes)", 
         "Filme Fino (Flexível - Grandes áreas)"
     ])
 
-    # Avisos dinâmicos baseados no tipo de painel
     if "Monocristalino" in tipo_painel:
-        st.success("💡 Dica: É o melhor para aproveitar pouco espaço. A eficiência média é de 18% a 22%.")
+        st.success("💡 Dica: Melhor para aproveitar pouco espaço. Eficiência média de 18% a 22%.")
     elif "Policristalino" in tipo_painel:
-        st.warning("💡 Dica: Mais económico, mas ocupa cerca de 20% mais área no telhado do que o Monocristalino.")
+        st.warning("💡 Dica: Mais económico, mas ocupa 20% mais área do que o Monocristalino.")
     else:
-        st.info("💡 Dica: Use apenas se o cliente tiver uma área gigante ou um telhado curvo. A eficiência é baixa (7% a 12%).")
+        st.info("💡 Dica: Use apenas se o cliente tiver uma área gigante ou telhado curvo. Eficiência baixa (7% a 12%).")
 
     col4, col5 = st.columns(2)
     with col4:
@@ -68,6 +67,10 @@ with tab1:
 
 with tab2:
     st.subheader("Dimensionamento Eólico")
+    tipo_turbina = st.selectbox("Tipo de Turbina Eólica", [
+        "Eixo Horizontal (Hélice - Mais comum)",
+        "Eixo Vertical (Savonius/Darrieus - Ventos fracos)"
+    ])
     col6, col7 = st.columns(2)
     with col6:
         velocidade_vento = st.number_input("Velocidade do vento (m/s)", min_value=1.0, value=6.0, step=0.5)
@@ -83,6 +86,11 @@ with tab2:
 
 with tab3:
     st.subheader("Energia Hídrica (Micro a Grandes Barragens)")
+    tipo_hidro = st.selectbox("Tipo de Turbina Hídrica", [
+        "Pelton (Alta Queda, Baixa Vazão)",
+        "Francis (Queda Média, Vazão Média)",
+        "Kaplan (Baixa Queda, Alta Vazão)"
+    ])
     col12, col13 = st.columns(2)
     with col12:
         vazao = st.number_input("Vazão de água (m³/s)", min_value=0.01, value=500.0, step=10.0)
@@ -101,6 +109,11 @@ with tab3:
 
 with tab4:
     st.subheader("Biomassa (Biogás e Resíduos)")
+    tipo_biomassa = st.selectbox("Tipo de Processo", [
+        "Combustão Direta (Queima em Caldeira)",
+        "Gaseificação (Gás de Síntese)",
+        "Biodigestor (Biogás)"
+    ])
     col14, col15 = st.columns(2)
     with col14:
         massa_residuo = st.number_input("Massa de resíduo por dia (kg)", min_value=1.0, value=1000.0, step=100.0)
@@ -164,19 +177,92 @@ with tab7:
     st.metric("Potencial Eólico Viável (1% do território)", f"{potencial_eolico_twh:,.0f} TWh/ano")
 
 with tab8:
+    st.subheader("🛠️ Gestão de Serviços e Manutenção")
+    st.write("Guia e checklist para empresas de manutenção e técnicos no terreno.")
+    
+    tipo_manutencao = st.selectbox("Tipo de Manutenção", [
+        "Preventiva (Planeada - Ex: Limpezas e inspeções)",
+        "Corretiva (Urgente - Ex: Avarias e quebras)",
+        "Preditiva (Monitorização - Ex: Análise de dados e sensores)"
+    ])
+    
+    sistema_alvo = st.selectbox("Sistema Alvo", ["Solar Fotovoltaico", "Eólico", "Hídrico", "Biomassa"])
+
+    st.markdown("### 📋 Checklist de Operação")
+    
+    if sistema_alvo == "Solar Fotovoltaico":
+        if "Preventiva" in tipo_manutencao:
+            st.checkbox("Limpeza dos painéis (remoção de pó e areia) - A cada 15 dias", value=True)
+            st.checkbox("Verificação do aperto dos cabos e conectores MC4", value=False)
+            st.checkbox("Inspeção visual de fissuras ou pontos quentes (Hot Spots)", value=False)
+            st.checkbox("Limpeza do dissipador de calor do inversor", value=False)
+        elif "Corretiva" in tipo_manutencao:
+            st.checkbox("Substituição de fusíveis ou disjuntores queimados")
+            st.checkbox("Substituição de inversor avariado")
+            st.checkbox("Reparação de cabos roídos por animais")
+        else:
+            st.checkbox("Termografia com câmara térmica para detetar painéis com falha")
+            st.checkbox("Análise da curva I-V do sistema")
+            
+    elif sistema_alvo == "Eólico":
+        if "Preventiva" in tipo_manutencao:
+            st.checkbox("Lubrificação do multiplicador (gearbox) e rolamentos")
+            st.checkbox("Inspeção visual das pás (fissuras, erosão)")
+            st.checkbox("Aperto dos parafusos da torre")
+        elif "Corretiva" in tipo_manutencao:
+            st.checkbox("Substituição de pás danificadas")
+            st.checkbox("Reparação do sistema de travagem")
+            
+    elif sistema_alvo == "Hídrico":
+        if "Preventiva" in tipo_manutencao:
+            st.checkbox("Limpeza das grades de captação (remoção de troncos e lixo)")
+            st.checkbox("Verificação de fugas de óleo na turbina")
+            st.checkbox("Inspeção do sistema de vedação (selos mecânicos)")
+            
+    elif sistema_alvo == "Biomassa":
+        if "Preventiva" in tipo_manutencao:
+            st.checkbox("Limpeza da fuligem na caldeira")
+            st.checkbox("Verificação do sistema de alimentação de combustível")
+            st.checkbox("Análise do pH do biodigestor")
+
+    st.divider()
+    st.subheader("💰 Simulador de Orçamento de Limpeza (Exemplo Solar)")
+    num_paineis_limpeza = st.number_input("Quantidade de painéis a limpar", min_value=1, value=50, step=10)
+    preco_por_painel = st.number_input("Preço de limpeza por painel (na sua moeda)", min_value=0.0, value=1500.0, step=100.0)
+    st.metric("Valor a Cobrar ao Cliente", f"{num_paineis_limpeza * preco_por_painel:,.2f}")
+
+with tab9:
     st.subheader("📚 Guia do Engenheiro Consultor")
     st.markdown("""
-    **1. Diferença entre Painéis (Solar):**
-    *   **Monocristalino:** Células de silício puro. Cor preta uniforme. Eficiência alta (18-22%). Melhor escolha para telhados residenciais onde o espaço é limitado.
-    *   **Policristalino:** Silício com impurezas. Cor azulada. Eficiência média (13-16%). Bom para grandes instalações no solo onde a área não é problema e o custo é o foco.
-    *   **Filme Fino:** Não usa silício cristalino. É flexível. Eficiência baixa (7-12%), precisa de muita área, mas funciona bem com pouca luz e altas temperaturas.
-
-    **2. Grandes Barragens vs. Micro-Hídrica**
-    A física é a mesma. A diferença está na escala. Uma grande barragem requer estudos geológicos e de impacto ambiental.
-
-    **3. Potencial Teórico vs. Técnico**
-    Na aba Macroeconómica, calculamos o Potencial Teórico. Na vida real, precisamos de cidades, florestas e agricultura. Mesmo assim, 1% desse potencial é suficiente para alimentar um país.
+    **Gestão de Manutenção (O Segredo do Lucro):**
+    *   **Corretiva:** É apagar fogo. Acontece quando o sistema avaria. É caro e o cliente fica insatisfeito.
+    *   **Preventiva:** É o seguro de saúde do sistema. Limpezas regulares e trocas de peças desgastadas. Garante que o sistema dure 25 anos.
+    *   **Preditiva:** O futuro. Usa sensores de Internet das Coisas (IoT) e Inteligência Artificial para avisar antes de o equipamento quebrar.
+    
+    **Dica de Venda:** Ofereça um **Contrato de Manutenção Anual** ao cliente. Em vez de ele pagar quando avaria, ele paga uma pequena mensalidade e a sua empresa garante a limpeza e inspeção. Isso gera receita garantida para a empresa dele!
     """)
+
+with tab10:
+    st.subheader("💼 Simulador de Faturamento do Meu Software")
+    st.write("Projete os seus ganhos como criador do EcoRenováveis Pro.")
+    
+    col16, col17 = st.columns(2)
+    with col16:
+        preco_setup = st.number_input("Preço de Customização por Empresa (USD)", min_value=0.0, value=150.0, step=10.0)
+        preco_mensal = st.number_input("Mensalidade por Empresa (USD)", min_value=0.0, value=25.0, step=5.0)
+    with col17:
+        num_empresas = st.number_input("Nº de Empresas Clientes", min_value=1, value=5, step=1)
+        num_formacoes = st.number_input("Nº de Centros de Formação (Licença Única 100$)", min_value=0, value=2, step=1)
+
+    receita_setup = (num_empresas * preco_setup) + (num_formacoes * 100.0)
+    receita_recorrente_ano = (num_empresas * preco_mensal) * 12
+    receita_total_ano1 = receita_setup + receita_recorrente_ano
+    
+    st.divider()
+    st.markdown("### 📈 Projeção Financeira (Ano 1)")
+    st.metric("Receita de Setup (Vendas e Instalação)", f"$ {receita_setup:,.2f}")
+    st.metric("Receita Recorrente (Mensalidades Anuais)", f"$ {receita_recorrente_ano:,.2f}")
+    st.success(f"**Faturamento Total Estimado no Primeiro Ano:** $ {receita_total_ano1:,.2f}")
 
 st.sidebar.title("EcoRenováveis Pro")
 st.sidebar.info("Desenvolvido por **Adão Cassessa**.\n\nEngenheiro de Energias Renováveis e Desenvolvedor Python.")
