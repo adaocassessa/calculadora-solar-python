@@ -10,15 +10,15 @@ st.write("Plataforma de dimensionamento de sistemas, grandes barragens e estimat
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "☀️ Solar Fotovoltaico", 
     "🌬️ Energia Eólica", 
-    "💧 Hídrica (Micro e Grandes Barragens)",
+    "💧 Hídrica (Micro e Grandes)",
     "🌱 Biomassa",
     "⚡ Eletrotécnica",
     "🔋 Baterias",
-    "🗺️ Potencial Macroeconómico (Países)",
+    "🗺️ Potencial Macroeconómico",
     "📚 Guia do Técnico"
 ])
 
-# Variáveis globais para partilhar entre abas
+# Variáveis globais
 if 'consumo_mensal' not in st.session_state:
     st.session_state.consumo_mensal = 300.0
 
@@ -33,11 +33,28 @@ with tab1:
     with col3:
         performance_ratio = st.slider("Performance Ratio", min_value=0.60, max_value=0.95, value=0.80, step=0.01)
 
+    st.subheader("Escolha do Painel Solar")
+    
+    # NOVIDADE AQUI: Seletor de Tecnologia do Painel
+    tipo_painel = st.selectbox("Tecnologia do Painel", [
+        "Monocristalino (Alta Eficiência - Telhados pequenos)", 
+        "Policristalino (Custo-benefício - Telhados grandes)", 
+        "Filme Fino (Flexível - Grandes áreas)"
+    ])
+
+    # Avisos dinâmicos baseados no tipo de painel
+    if "Monocristalino" in tipo_painel:
+        st.success("💡 Dica: É o melhor para aproveitar pouco espaço. A eficiência média é de 18% a 22%.")
+    elif "Policristalino" in tipo_painel:
+        st.warning("💡 Dica: Mais económico, mas ocupa cerca de 20% mais área no telhado do que o Monocristalino.")
+    else:
+        st.info("💡 Dica: Use apenas se o cliente tiver uma área gigante ou um telhado curvo. A eficiência é baixa (7% a 12%).")
+
     col4, col5 = st.columns(2)
     with col4:
         potencia_painel = st.number_input("Potência do painel (W)", min_value=100, value=550, step=10)
     with col5:
-        area_painel = st.number_input("Área do painel (m²)", min_value=0.5, value=2.6, step=0.1)
+        area_painel = st.number_input("Área de cada painel (m²)", min_value=0.5, value=2.6, step=0.1)
 
     consumo_diario = consumo_mensal / 30
     potencia_kwp = consumo_diario / (irradiacao * performance_ratio)
@@ -47,7 +64,7 @@ with tab1:
     c1, c2, c3 = st.columns(3)
     c1.metric("Potência Necessária", f"{potencia_kwp:.2f} kWp")
     c2.metric("Número de Painéis", f"{numero_paineis} un.")
-    c3.metric("Área", f"{(numero_paineis * area_painel):.1f} m²")
+    c3.metric("Área Total Requerida", f"{(numero_paineis * area_painel):.1f} m²")
 
 with tab2:
     st.subheader("Dimensionamento Eólico")
@@ -65,13 +82,10 @@ with tab2:
     st.metric("Potência Elétrica Gerada", f"{potencia_eolica_w:.0f} W")
 
 with tab3:
-    st.subheader("Energia Hídrica (De Micro a Grandes Barragens)")
-    st.info("Use esta aba tanto para um rio numa fazenda (Q=0.1, H=5) quanto para a Barragem de Laúca (Q=500, H=100).")
-    
+    st.subheader("Energia Hídrica (Micro a Grandes Barragens)")
     col12, col13 = st.columns(2)
     with col12:
-        # Agora permite valores de vazão muito altos para grandes barragens
-        vazao = st.number_input("Vazão de água (m³/s)", min_value=0.01, value=500.0, step=10.0, help="500 m³/s = 500.000 litros por segundo.")
+        vazao = st.number_input("Vazão de água (m³/s)", min_value=0.01, value=500.0, step=10.0)
         queda = st.number_input("Altura da queda (metros)", min_value=0.5, value=100.0, step=1.0)
     with col13:
         eficiencia_hidrica = st.slider("Eficiência (Turbina + Gerador)", min_value=0.50, max_value=0.95, value=0.85, step=0.01)
@@ -81,19 +95,18 @@ with tab3:
     
     st.divider()
     if potencia_hidrica_mw > 1:
-        st.metric("Potência Gerada (Grande Escala)", f"{potencia_hidrica_mw:.2f} MW (Megawatts)")
+        st.metric("Potência Gerada (Grande Escala)", f"{potencia_hidrica_mw:.2f} MW")
     else:
         st.metric("Potência Gerada (Micro Escala)", f"{potencia_hidrica_w:.0f} W")
 
 with tab4:
     st.subheader("Biomassa (Biogás e Resíduos)")
-    st.info("Cálculo da energia gerada a partir da queima de resíduos agrícolas ou biogás.")
     col14, col15 = st.columns(2)
     with col14:
-        massa_residuo = st.number_input("Massa de resíduo queimado por dia (kg)", min_value=1.0, value=1000.0, step=100.0)
-        poder_calorifico = st.number_input("Poder Calorífico do resíduo (MJ/kg)", min_value=1.0, value=15.0, step=1.0, help="Madeira ~15, Bagaço de cana ~8.")
+        massa_residuo = st.number_input("Massa de resíduo por dia (kg)", min_value=1.0, value=1000.0, step=100.0)
+        poder_calorifico = st.number_input("Poder Calorífico (MJ/kg)", min_value=1.0, value=15.0, step=1.0)
     with col15:
-        eficiencia_biomassa = st.slider("Eficiência do gerador a vapor", min_value=0.15, max_value=0.40, value=0.25, step=0.01)
+        eficiencia_biomassa = st.slider("Eficiência do gerador", min_value=0.15, max_value=0.40, value=0.25, step=0.01)
     
     energia_diaria_kwh = (massa_residuo * poder_calorifico * eficiencia_biomassa) / 3.6
     potencia_biomassa_kw = energia_diaria_kwh / 24
@@ -137,35 +150,32 @@ with tab6:
     st.metric("Número de Baterias Necessárias", f"{numero_baterias} un.")
 
 with tab7:
-    st.subheader("🗺️ Estimativa de Potencial Macroeconómico (Escala Nacional)")
-    st.write("Calcule o potencial teórico bruto de uma região ou país inteiro (ex: Angola).")
-    
-    area_pais = st.number_input("Área total da região/país (km²)", min_value=100.0, value=1246700.0, step=10000.0, help="Angola tem cerca de 1.246.700 km².")
+    st.subheader("🗺️ Potencial Macroeconómico (Países)")
+    area_pais = st.number_input("Área da região/país (km²)", min_value=100.0, value=1246700.0, step=10000.0)
     
     st.markdown("### 1. Potencial Solar Teórico")
-    irradiacao_media_pais = st.number_input("Irradiação solar média do país (kWh/m²/dia)", min_value=1.0, value=5.5, step=0.1)
-    # Cálculo: Area (km2 para m2) * Irradiacao * Eficiencia (20%) * 365 dias / 1000 (para GWh) / 1000 (para TWh)
+    irradiacao_media_pais = st.number_input("Irradiação solar média (kWh/m²/dia)", min_value=1.0, value=5.5, step=0.1)
     potencial_solar_twh = (area_pais * 1_000_000 * irradiacao_media_pais * 365 * 0.20) / 1_000_000_000
-    st.metric("Potencial Solar Teórico (Cobertura Total)", f"{potencial_solar_twh:,.0f} TWh/ano")
-    st.caption(f"O consumo total de Angola é de cerca de 17 TWh/ano. O sol sobre o país é imensamente superior à necessidade.")
+    st.metric("Potencial Solar Teórico", f"{potencial_solar_twh:,.0f} TWh/ano")
 
     st.markdown("### 2. Potencial Eólico Teórico")
-    densidade_eolica = st.number_input("Densidade de potência eólica média (W/m²)", min_value=10.0, value=150.0, step=10.0, help="Áreas costeiras têm densidade maior.")
-    # Cálculo: Area (km2 para m2) * densidade * fator de uso do solo (1%) * 8760 horas / 1_000_000_000 (para TWh)
+    densidade_eolica = st.number_input("Densidade eólica média (W/m²)", min_value=10.0, value=150.0, step=10.0)
     potencial_eolico_twh = (area_pais * 1_000_000 * densidade_eolica * 0.01 * 8760) / 1_000_000_000
-    st.metric("Potencial Eólico Viável (Usando 1% do território)", f"{potencial_eolico_twh:,.0f} TWh/ano")
+    st.metric("Potencial Eólico Viável (1% do território)", f"{potencial_eolico_twh:,.0f} TWh/ano")
 
 with tab8:
     st.subheader("📚 Guia do Engenheiro Consultor")
     st.markdown("""
-    **1. Grandes Barragens vs. Micro-Hídrica**
-    A física é a mesma. A diferença está na escala e no impacto ambiental. Enquanto uma micro-hídrica usa um rio local, uma grande barragem (como Laúca ou Capanda) requer estudos geológicos, alagamento de áreas e linhas de transmissão de alta tensão.
-    
-    **2. Potencial Teórico vs. Potencial Técnico**
-    Na aba "Potencial Macroeconómico", calculamos o **Potencial Teórico** (ex: se cobrirmos Angola inteira de painéis). Na vida real, apenas uma fração minúscula (1% a 3%) é o **Potencial Técnico**, pois precisamos de cidades, florestas, agricultura e parques naturais. Mesmo assim, esse 1% é suficiente para alimentar um país inteiro.
-    
-    **3. Como Vender este Software para Governos e Bancos**
-    Use a aba Macroeconómica para mostrar que o país tem um potencial gigantesco inexplorado. Bancos de investimento (como o BAI ou BFA) adoram ver esses números para financiar projetos de energia verde.
+    **1. Diferença entre Painéis (Solar):**
+    *   **Monocristalino:** Células de silício puro. Cor preta uniforme. Eficiência alta (18-22%). Melhor escolha para telhados residenciais onde o espaço é limitado.
+    *   **Policristalino:** Silício com impurezas. Cor azulada. Eficiência média (13-16%). Bom para grandes instalações no solo onde a área não é problema e o custo é o foco.
+    *   **Filme Fino:** Não usa silício cristalino. É flexível. Eficiência baixa (7-12%), precisa de muita área, mas funciona bem com pouca luz e altas temperaturas.
+
+    **2. Grandes Barragens vs. Micro-Hídrica**
+    A física é a mesma. A diferença está na escala. Uma grande barragem requer estudos geológicos e de impacto ambiental.
+
+    **3. Potencial Teórico vs. Técnico**
+    Na aba Macroeconómica, calculamos o Potencial Teórico. Na vida real, precisamos de cidades, florestas e agricultura. Mesmo assim, 1% desse potencial é suficiente para alimentar um país.
     """)
 
 st.sidebar.title("EcoRenováveis Pro")
