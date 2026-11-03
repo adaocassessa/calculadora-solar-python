@@ -1,19 +1,17 @@
-# ☀️ Calculadora de Dimensionamento Fotovoltaico
+# 🌍 EcoRenováveis Pro
 
-Uma ferramenta web interativa desenvolvida em Python para pré-dimensionamento de sistemas de energia solar fotovoltaica.
+Plataforma completa de engenharia, dimensionamento e gestão para Energias Renováveis (Solar, Eólica, Hídrica e Biomassa).
 
-## 🎯 Objetivo
-Facilitar o cálculo inicial de potência necessária (kWp), número de painéis, área de instalação e estimativa de retorno financeiro (payback) para clientes e instaladores.
+## 🚀 Aceda à ferramenta online
+Você pode testar o software funcionando em tempo real clicando no link abaixo:
+👉 **[Aceder ao EcoRenováveis Pro](https://ecorenovaveis-angola.streamlit.app/)**
 
-## 🛠️ Tecnologias Utilizadas
-- **Python 3**
-- **Streamlit** (Interface Web)
-- **Lógica de engenharia** para cálculo de geração e performance ratio
+## 📞 Contacto
+Se você é uma empresa e quer uma versão exclusiva com o seu logotipo, entre em contacto:
 
-## 🚀 Como executar o projeto
-1. Clone o repositório.
-2. Crie um ambiente virtual e instale o Streamlit: `pip install streamlit`
-3. Execute o app: `streamlit run app.py`
+- **WhatsApp:** [946 419 656](https://wa.me/244946419656)
+- **Chamadas:** 946 419 656 / 957 060 820
+- **E-mail:** adaocassessa@gmail.com
 
 ## 👨‍💻 Autor
-Desenvolvido por [Seu Nome Aqui] - Técnico em Energias Renováveis e Desenvolvedor Python.
+**Adão Cassessa** - Técnico em Energias Renováveis e Desenvolvedor Python.
