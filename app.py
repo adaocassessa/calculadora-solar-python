@@ -6,14 +6,15 @@ st.set_page_config(page_title="EcoRenováveis Pro - Global", page_icon="🌍", l
 st.title("🌍 EcoRenováveis Pro: Engenharia e Gestão")
 st.write("Plataforma de dimensionamento, potencial energético, gestão de serviços e manutenção.")
 
-# Criando as abas (Agora com 10 abas)
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+# Criando as abas (Agora com 11 abas)
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     "☀️ Solar Fotovoltaico", 
     "🌬️ Energia Eólica", 
     "💧 Hídrica (Micro e Grandes)",
     "🌱 Biomassa",
     "⚡ Eletrotécnica",
     "🔋 Baterias",
+    "🔌 Inversores",
     "🗺️ Potencial Macroeconómico",
     "🛠️ Serviços e Manutenção",
     "📚 Guia do Técnico",
@@ -163,6 +164,46 @@ with tab6:
     st.metric("Número de Baterias Necessárias", f"{numero_baterias} un.")
 
 with tab7:
+    st.subheader("🔌 Dimensionamento e Escolha do Inversor")
+    st.write("O inversor é o cérebro do sistema. Ele deve suportar os equipamentos da casa e os picos de arranque (motores).")
+    
+    tipo_inversor = st.selectbox("Tipo de Inversor", [
+        "Híbrido (Rede + Baterias - Recomendado em Angola)",
+        "Off-Grid (Apenas Baterias - Zonas rurais)",
+        "On-Grid (Apenas Rede - Sem baterias)"
+    ])
+    
+    if "Híbrido" in tipo_inversor:
+        st.success("💡 Ideal para locais com cortes frequentes de energia. Carrega as baterias e usa a rede quando o sol acaba.")
+    elif "Off-Grid" in tipo_inversor:
+        st.warning("💡 Necessita de um banco de baterias maior. Não tem ligação à rede pública.")
+    else:
+        st.info("💡 Desliga-se em caso de corte de energia da rede, por segurança dos técnicos da rede elétrica.")
+
+    col10, col11 = st.columns(2)
+    with col10:
+        carga_total_continuа = st.number_input("Carga total contínua (Watts)", min_value=100, value=2000, step=100, help="Soma de todos os aparelhos ligados ao mesmo tempo.")
+    with col11:
+        tem_motores = st.selectbox("Tem equipamentos com motor? (Geleira, Bomba de água)", ["Sim", "Não"])
+    
+    fator_seguranca = 1.25
+    potencia_continua_inversor = carga_total_continuа * fator_seguranca
+    
+    if tem_motores == "Sim":
+        potencia_pico_inversor = carga_total_continuа * 3.0 # Pico de arranque
+        st.warning(f"⚠️ Atenção: Devido aos motores, o inversor precisa de suportar um pico de **{potencia_pico_inversor:.0f} W** por alguns segundos.")
+    else:
+        potencia_pico_inversor = potencia_continua_inversor
+
+    st.divider()
+    st.subheader("Resultado do Inversor")
+    i1, i2 = st.columns(2)
+    i1.metric("Potência Contínua Recomendada", f"{potencia_continua_inversor:.0f} W")
+    i2.metric("Potência de Pico (Surge)", f"{potencia_pico_inversor:.0f} W")
+    
+    st.caption("Procure no mercado um inversor que tenha estas especificações ou superiores.")
+
+with tab8:
     st.subheader("🗺️ Potencial Macroeconómico (Países)")
     area_pais = st.number_input("Área da região/país (km²)", min_value=100.0, value=1246700.0, step=10000.0)
     
@@ -176,20 +217,16 @@ with tab7:
     potencial_eolico_twh = (area_pais * 1_000_000 * densidade_eolica * 0.01 * 8760) / 1_000_000_000
     st.metric("Potencial Eólico Viável (1% do território)", f"{potencial_eolico_twh:,.0f} TWh/ano")
 
-with tab8:
+with tab9:
     st.subheader("🛠️ Gestão de Serviços e Manutenção")
-    st.write("Guia e checklist para empresas de manutenção e técnicos no terreno.")
-    
     tipo_manutencao = st.selectbox("Tipo de Manutenção", [
         "Preventiva (Planeada - Ex: Limpezas e inspeções)",
         "Corretiva (Urgente - Ex: Avarias e quebras)",
         "Preditiva (Monitorização - Ex: Análise de dados e sensores)"
     ])
-    
     sistema_alvo = st.selectbox("Sistema Alvo", ["Solar Fotovoltaico", "Eólico", "Hídrico", "Biomassa"])
 
     st.markdown("### 📋 Checklist de Operação")
-    
     if sistema_alvo == "Solar Fotovoltaico":
         if "Preventiva" in tipo_manutencao:
             st.checkbox("Limpeza dos painéis (remoção de pó e areia) - A cada 15 dias", value=True)
@@ -209,16 +246,11 @@ with tab8:
             st.checkbox("Lubrificação do multiplicador (gearbox) e rolamentos")
             st.checkbox("Inspeção visual das pás (fissuras, erosão)")
             st.checkbox("Aperto dos parafusos da torre")
-        elif "Corretiva" in tipo_manutencao:
-            st.checkbox("Substituição de pás danificadas")
-            st.checkbox("Reparação do sistema de travagem")
-            
     elif sistema_alvo == "Hídrico":
         if "Preventiva" in tipo_manutencao:
             st.checkbox("Limpeza das grades de captação (remoção de troncos e lixo)")
             st.checkbox("Verificação de fugas de óleo na turbina")
             st.checkbox("Inspeção do sistema de vedação (selos mecânicos)")
-            
     elif sistema_alvo == "Biomassa":
         if "Preventiva" in tipo_manutencao:
             st.checkbox("Limpeza da fuligem na caldeira")
@@ -231,21 +263,17 @@ with tab8:
     preco_por_painel = st.number_input("Preço de limpeza por painel (na sua moeda)", min_value=0.0, value=1500.0, step=100.0)
     st.metric("Valor a Cobrar ao Cliente", f"{num_paineis_limpeza * preco_por_painel:,.2f}")
 
-with tab9:
+with tab10:
     st.subheader("📚 Guia do Engenheiro Consultor")
     st.markdown("""
-    **Gestão de Manutenção (O Segredo do Lucro):**
-    *   **Corretiva:** É apagar fogo. Acontece quando o sistema avaria. É caro e o cliente fica insatisfeito.
-    *   **Preventiva:** É o seguro de saúde do sistema. Limpezas regulares e trocas de peças desgastadas. Garante que o sistema dure 25 anos.
-    *   **Preditiva:** O futuro. Usa sensores de Internet das Coisas (IoT) e Inteligência Artificial para avisar antes de o equipamento quebrar.
-    
-    **Dica de Venda:** Ofereça um **Contrato de Manutenção Anual** ao cliente. Em vez de ele pagar quando avaria, ele paga uma pequena mensalidade e a sua empresa garante a limpeza e inspeção. Isso gera receita garantida para a empresa dele!
+    **Inversores Híbridos (O Padrão em Angola):**
+    *   **Porquê usar?** Porque a rede elétrica pode falhar, mas você não quer que a casa fique no escuro. O inversor híbrido carrega as baterias com o sol e, ao mesmo tempo, usa a rede da ENDE para o consumo imediato. Se a rede cair, ele muda para as baterias instantaneamente.
+    *   **Potência de Pico:** Um inversor de 3kW contínuos pode aguentar 6kW (ou mais) por 2 segundos. É isso que salva a sua geleira quando o motor arranca.
+    *   **Cuidado com o Fator de Potência:** Equipamentos com motores têm um Fator de Potência (FP) baixo. Se for comprar um inversor, procure um com FP de 0.8 ou superior.
     """)
 
-with tab10:
+with tab11:
     st.subheader("💼 Simulador de Faturamento do Meu Software")
-    st.write("Projete os seus ganhos como criador do EcoRenováveis Pro.")
-    
     col16, col17 = st.columns(2)
     with col16:
         preco_setup = st.number_input("Preço de Customização por Empresa (USD)", min_value=0.0, value=150.0, step=10.0)
@@ -260,8 +288,8 @@ with tab10:
     
     st.divider()
     st.markdown("### 📈 Projeção Financeira (Ano 1)")
-    st.metric("Receita de Setup (Vendas e Instalação)", f"$ {receita_setup:,.2f}")
-    st.metric("Receita Recorrente (Mensalidades Anuais)", f"$ {receita_recorrente_ano:,.2f}")
+    st.metric("Receita de Setup", f"$ {receita_setup:,.2f}")
+    st.metric("Receita Recorrente (Anual)", f"$ {receita_recorrente_ano:,.2f}")
     st.success(f"**Faturamento Total Estimado no Primeiro Ano:** $ {receita_total_ano1:,.2f}")
 
 st.sidebar.title("EcoRenováveis Pro")
