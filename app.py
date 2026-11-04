@@ -90,13 +90,17 @@ with tab1:
     st.session_state.latitude = lat
     st.session_state.longitude = lon
 
-    # Mapa Interativo
+    # Mapa Interativo (Otimizado para PC)
     st.markdown("### 🗺️ Mapa da Instalação")
     try:
         df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
         st.map(df_mapa, zoom=12)
     except Exception as e:
-        st.error("O mapa não pôde ser carregado neste dispositivo. Verifique a sua ligação à internet.")
+        st.warning("O mapa interativo não pôde ser carregado (comum em alguns telemóveis).")
+    
+    # Botão de GPS (Solução universal para telemóveis)
+    link_google_maps = f"https://www.google.com/maps?q={lat},{lon}"
+    st.link_button("📍 Abrir localização no GPS (Google Maps)", link_google_maps)
 
     # Cálculo do Ângulo Ótimo
     st.divider()
