@@ -6,19 +6,14 @@ import pandas as pd
 st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
 
 # --- CÓDIGO CSS PARA DARK MODE PREMIUM ---
-st.markdown("""
+css = """
 <style>
-    /* Fundo escuro elegante */
     [data-testid="stAppViewContainer"] {
         background-color: #0e1117 !important;
     }
-    
-    /* Letras claras para leitura no escuro */
     h1, h2, h3, h4, h5, h6, p, span, label, div, li {
         color: #e2e8f0 !important;
     }
-    
-    /* Abas (Tabs) com visual moderno */
     [data-baseweb="tab-list"] {
         background-color: #1e293b !important;
         border-radius: 10px;
@@ -29,27 +24,21 @@ st.markdown("""
         font-weight: 600 !important;
     }
     [data-baseweb="tab-list"] button[aria-selected="true"] p {
-        color: #10b981 !important; /* Verde destaque */
+        color: #10b981 !important;
     }
     [data-baseweb="tab-highlight"] {
         background-color: #10b981 !important;
     }
-    
-    /* Caixas de input escuras */
     .stTextInput>div>div>input, .stNumberInput>div>div>input, .stSelectbox>div>div>div {
         background-color: #1e293b !important;
         color: #ffffff !important;
         border: 1px solid #334155 !important;
         border-radius: 8px;
     }
-
-    /* Fundo da barra lateral (Sidebar) */
     [data-testid="stSidebar"] {
         background-color: #0b0f19 !important;
         border-right: 1px solid #1e293b;
     }
-    
-    /* Resultados (Métricas) em destaque verde */
     [data-testid="stMetricValue"] {
         font-size: 1.8rem;
         font-weight: bold;
@@ -59,14 +48,9 @@ st.markdown("""
         color: #94a3b8 !important;
         font-weight: 500 !important;
     }
-    
-    /* Caixas de informação (azul, verde, amarelo) */
-    [data-testid="stNotification"] {
-        background-color: #1e293b !important;
-        border: 1px solid #334155;
-    }
 </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(css, unsafe_allow_html=True)
 
 st.title("🌍 EcoRenováveis Pro: Engenharia de Precisão")
 st.write("Plataforma avançada com geolocalização, cálculo de inclinação solar e gestão de sistemas.")
@@ -106,10 +90,13 @@ with tab1:
     st.session_state.latitude = lat
     st.session_state.longitude = lon
 
-    # Mapa Interativo (Garantindo que o DataFrame está correto)
+    # Mapa Interativo
     st.markdown("### 🗺️ Mapa da Instalação")
-    df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
-    st.map(df_mapa, zoom=12)
+    try:
+        df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
+        st.map(df_mapa, zoom=12)
+    except Exception as e:
+        st.error("O mapa não pôde ser carregado neste dispositivo. Verifique a sua ligação à internet.")
 
     # Cálculo do Ângulo Ótimo
     st.divider()
@@ -163,14 +150,13 @@ with tab2:
     c3.metric("Área Total", f"{(numero_paineis * area_painel):.1f} m²")
     c4.metric("Geração Mensal Estimada", f"{geracao_real_estimada:.0f} kWh")
 
-    # GRÁFICO DE EFICIÊNCIA (Ajustado para Dark Mode)
+    # GRÁFICO DE EFICIÊNCIA
     st.subheader("📊 Curva de Geração Diária (Estimada)")
     horas = list(range(6, 19))
     geracao_hora = [max(0, (potencia_kwp * irradiacao / 6) * math.sin((h - 6) * math.pi / 12)) for h in horas]
     df_grafico = pd.DataFrame({"Hora do Dia": horas, "Geração (kW)": geracao_hora})
     st.line_chart(df_grafico.set_index("Hora do Dia"), color="#10b981")
 
-# ... (As restantes abas continuam iguais, mas com o novo design)
 with tab3:
     st.subheader("Dimensionamento Eólico")
     tipo_turbina = st.selectbox("Tipo de Turbina Eólica", ["Eixo Horizontal (Hélice)", "Eixo Vertical (Ventos fracos)"])
