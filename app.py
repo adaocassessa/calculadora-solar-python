@@ -5,47 +5,65 @@ import pandas as pd
 # Configuração da página
 st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
 
-# --- CÓDIGO CSS PARA MELHORAR O DESIGN E CORRIGIR O MODO ESCURO ---
+# --- CÓDIGO CSS PARA DARK MODE PREMIUM ---
 st.markdown("""
 <style>
-    /* Força o fundo do aplicativo a ser claro e elegante */
+    /* Fundo escuro elegante */
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%) !important;
+        background-color: #0e1117 !important;
     }
     
-    /* Força todos os textos a serem escuros para dar contraste */
+    /* Letras claras para leitura no escuro */
     h1, h2, h3, h4, h5, h6, p, span, label, div, li {
-        color: #1e293b !important;
+        color: #e2e8f0 !important;
     }
     
-    /* Deixa as abas (tabs) com a letra bem escura e forte */
+    /* Abas (Tabs) com visual moderno */
+    [data-baseweb="tab-list"] {
+        background-color: #1e293b !important;
+        border-radius: 10px;
+        padding: 5px;
+    }
     [data-baseweb="tab-list"] button p {
-        color: #0f172a !important;
+        color: #94a3b8 !important;
         font-weight: 600 !important;
     }
+    [data-baseweb="tab-list"] button[aria-selected="true"] p {
+        color: #10b981 !important; /* Verde destaque */
+    }
+    [data-baseweb="tab-highlight"] {
+        background-color: #10b981 !important;
+    }
     
-    /* Limpa o fundo das caixas de input para não ficarem escuras */
+    /* Caixas de input escuras */
     .stTextInput>div>div>input, .stNumberInput>div>div>input, .stSelectbox>div>div>div {
-        background-color: #ffffff !important;
-        color: #1e293b !important;
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        border: 1px solid #334155 !important;
         border-radius: 8px;
     }
 
     /* Fundo da barra lateral (Sidebar) */
     [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #cbd5e1;
+        background-color: #0b0f19 !important;
+        border-right: 1px solid #1e293b;
     }
     
-    /* Força as métricas (os resultados) a ficarem verdes e destacadas */
+    /* Resultados (Métricas) em destaque verde */
     [data-testid="stMetricValue"] {
         font-size: 1.8rem;
         font-weight: bold;
-        color: #047857 !important;
+        color: #10b981 !important;
     }
     [data-testid="stMetricLabel"] p {
-        color: #475569 !important;
+        color: #94a3b8 !important;
         font-weight: 500 !important;
+    }
+    
+    /* Caixas de informação (azul, verde, amarelo) */
+    [data-testid="stNotification"] {
+        background-color: #1e293b !important;
+        border: 1px solid #334155;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -55,7 +73,7 @@ st.write("Plataforma avançada com geolocalização, cálculo de inclinação so
 
 # Criando as abas
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
-    "📍 Localização e Mapa", 
+    "📍 Mapa e Localização", 
     "☀️ Solar Fotovoltaico", 
     "🌬️ Energia Eólica", 
     "💧 Hídrica", 
@@ -88,15 +106,15 @@ with tab1:
     st.session_state.latitude = lat
     st.session_state.longitude = lon
 
-    # Mapa Interativo
+    # Mapa Interativo (Garantindo que o DataFrame está correto)
+    st.markdown("### 🗺️ Mapa da Instalação")
     df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
-    st.map(df_mapa, zoom=10)
+    st.map(df_mapa, zoom=12)
 
     # Cálculo do Ângulo Ótimo
     st.divider()
     st.subheader("📐 Otimização do Ângulo de Inclinação")
     
-    # Fórmula simplificada: No hemisfério sul, o ângulo é a latitude + 5 a 10 graus.
     angulo_otimo = abs(lat) + 5 if lat < 0 else abs(lat) - 5
     direcao = "Norte" if lat < 0 else "Sul"
     
@@ -115,16 +133,14 @@ with tab2:
     with col2:
         irradiacao = st.number_input("Irradiação solar local (kWh/m²/dia)", min_value=1.0, value=5.5, step=0.1)
     with col3:
-        sombreamento = st.slider("Perda por Sombreamento (%)", min_value=0, max_value=50, value=10, step=5, help="Árvores, prédios ou nuvens reduzem a geração.")
+        sombreamento = st.slider("Perda por Sombreamento (%)", min_value=0, max_value=50, value=10, step=5)
 
     st.subheader("Escolha do Painel Solar")
     tipo_painel = st.selectbox("Tecnologia do Painel", [
-        "Monocristalino (Alta Eficiência - 20%)", 
-        "Policristalino (Custo-benefício - 15%)", 
-        "Filme Fino (Flexível - 10%)"
+        "Monocristalino (Alta Eficiência)", 
+        "Policristalino (Custo-benefício)", 
+        "Filme Fino (Flexível)"
     ])
-
-    eficiencia_painel = 0.20 if "Monocristalino" in tipo_painel else (0.15 if "Policristalino" in tipo_painel else 0.10)
 
     col4, col5 = st.columns(2)
     with col4:
@@ -132,9 +148,8 @@ with tab2:
     with col5:
         area_painel = st.number_input("Área de cada painel (m²)", min_value=0.5, value=2.6, step=0.1)
 
-    # Cálculos considerando o sombreamento
     fator_sombreamento = 1 - (sombreamento / 100)
-    performance_ratio = 0.80 * fator_sombreamento # PR base de 80% menos sombreamento
+    performance_ratio = 0.80 * fator_sombreamento
     
     consumo_diario = consumo_mensal / 30
     potencia_kwp = consumo_diario / (irradiacao * performance_ratio)
@@ -148,14 +163,14 @@ with tab2:
     c3.metric("Área Total", f"{(numero_paineis * area_painel):.1f} m²")
     c4.metric("Geração Mensal Estimada", f"{geracao_real_estimada:.0f} kWh")
 
-    # GRÁFICO DE EFICIÊNCIA
+    # GRÁFICO DE EFICIÊNCIA (Ajustado para Dark Mode)
     st.subheader("📊 Curva de Geração Diária (Estimada)")
-    # Simulação simples de uma curva de sino para o sol
     horas = list(range(6, 19))
     geracao_hora = [max(0, (potencia_kwp * irradiacao / 6) * math.sin((h - 6) * math.pi / 12)) for h in horas]
     df_grafico = pd.DataFrame({"Hora do Dia": horas, "Geração (kW)": geracao_hora})
     st.line_chart(df_grafico.set_index("Hora do Dia"), color="#10b981")
 
+# ... (As restantes abas continuam iguais, mas com o novo design)
 with tab3:
     st.subheader("Dimensionamento Eólico")
     tipo_turbina = st.selectbox("Tipo de Turbina Eólica", ["Eixo Horizontal (Hélice)", "Eixo Vertical (Ventos fracos)"])
@@ -255,12 +270,12 @@ with tab9:
 
 with tab10:
     st.subheader("📚 Guia do Técnico")
-    st.info("O ângulo de inclinação ideal depende da latitude. Em Angola, os painéis devem apontar para o Norte e ter uma inclinação igual à latitude + 5°. O sombreamento deve ser sempre considerado nas perdas.")
+    st.info("O ângulo de inclinação ideal depende da latitude. Em Angola, os painéis devem apontar para o Norte e ter uma inclinação igual à latitude + 5°.")
 
 with tab11:
     st.subheader("💼 Meu Negócio")
     st.write("Projeção de faturamento da plataforma.")
-    st.metric("Faturamento Projetado (Ano 1)", "$ 3.000,00 (Exemplo base de 5 empresas)")
+    st.metric("Faturamento Projetado (Ano 1)", "$ 3.000,00 (Exemplo)")
 
 st.sidebar.title("EcoRenováveis Pro")
-st.sidebar.info("Desenvolvido por **Adão Cassessa**.\n\nEngenharia de Precisão e Gestão.")
+st.sidebar.info("Desenvolvido por **Adão Cassessa**.\n\nEngenharia de Precisão.")
