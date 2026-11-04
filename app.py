@@ -3,31 +3,49 @@ import math
 import pandas as pd
 
 # Configuração da página
-st.set_page_config(page_title="EcoRenováveis Pro - Global", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
 
-# --- CÓDIGO CSS PARA MELHORAR O DESIGN (Menos robótico) ---
+# --- CÓDIGO CSS PARA MELHORAR O DESIGN E CORRIGIR O MODO ESCURO ---
 st.markdown("""
 <style>
-    /* Fundo geral */
-    .stApp {
-        background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+    /* Força o fundo do aplicativo a ser claro e elegante */
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%) !important;
     }
-    /* Títulos mais fortes */
-    h1, h2, h3 {
-        font-family: 'Segoe UI', sans-serif;
-        font-weight: 700;
-        color: #0f172a;
+    
+    /* Força todos os textos a serem escuros para dar contraste */
+    h1, h2, h3, h4, h5, h6, p, span, label, div, li {
+        color: #1e293b !important;
     }
-    /* Botões e métricas */
+    
+    /* Deixa as abas (tabs) com a letra bem escura e forte */
+    [data-baseweb="tab-list"] button p {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Limpa o fundo das caixas de input para não ficarem escuras */
+    .stTextInput>div>div>input, .stNumberInput>div>div>input, .stSelectbox>div>div>div {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border-radius: 8px;
+    }
+
+    /* Fundo da barra lateral (Sidebar) */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+        border-right: 1px solid #cbd5e1;
+    }
+    
+    /* Força as métricas (os resultados) a ficarem verdes e destacadas */
     [data-testid="stMetricValue"] {
         font-size: 1.8rem;
         font-weight: bold;
-        color: #047857;
+        color: #047857 !important;
     }
-    /* Caixas de input */
-    .stTextInput>div>div>input, .stNumberInput>div>div>input {
-        border-radius: 10px;
-        border: 2px solid #10b981;
+    [data-testid="stMetricLabel"] p {
+        color: #475569 !important;
+        font-weight: 500 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -231,17 +249,18 @@ with tab9:
     st.subheader("🛠️ Manutenção")
     tipo_manutencao = st.selectbox("Tipo de Manutenção", ["Preventiva", "Corretiva", "Preditiva"])
     st.markdown("### Checklist")
-    st.checkbox("Limpeza dos painéis (remoção de pó)")
+    st.checkbox("Limpeza dos painéis (remoção de pó)", value=True)
     st.checkbox("Verificação de cabos e conectores")
     st.checkbox("Inspeção do inversor")
 
 with tab10:
     st.subheader("📚 Guia do Técnico")
-    st.info("O ângulo de inclinação ideal depende da latitude. Em Angola, os painéis devem apontar para o Norte e ter uma inclinação igual à latitude + 5°.")
+    st.info("O ângulo de inclinação ideal depende da latitude. Em Angola, os painéis devem apontar para o Norte e ter uma inclinação igual à latitude + 5°. O sombreamento deve ser sempre considerado nas perdas.")
 
 with tab11:
     st.subheader("💼 Meu Negócio")
-    st.metric("Faturamento Projetado (Ano 1)", "$ 3.000,00")
+    st.write("Projeção de faturamento da plataforma.")
+    st.metric("Faturamento Projetado (Ano 1)", "$ 3.000,00 (Exemplo base de 5 empresas)")
 
 st.sidebar.title("EcoRenováveis Pro")
 st.sidebar.info("Desenvolvido por **Adão Cassessa**.\n\nEngenharia de Precisão e Gestão.")
