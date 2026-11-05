@@ -5,20 +5,20 @@ import pandas as pd
 # Configuração da página
 st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
 
-# --- CÓDIGO CSS PARA DARK MODE PREMIUM E CORREÇÃO DE DROPDOWNS ---
+# --- CÓDIGO CSS PARA FORÇAR O MODO ESCURO EM TODOS OS COMPONENTES ---
 css = """
 <style>
-    /* Fundo escuro elegante */
+    /* Fundo geral escuro */
     [data-testid="stAppViewContainer"] {
         background-color: #0e1117 !important;
     }
     
-    /* Letras claras para leitura no escuro */
+    /* Letras claras */
     h1, h2, h3, h4, h5, h6, p, span, label, div, li {
         color: #e2e8f0 !important;
     }
     
-    /* Abas (Tabs) com visual moderno */
+    /* Abas (Tabs) */
     [data-baseweb="tab-list"] {
         background-color: #1e293b !important;
         border-radius: 10px;
@@ -29,53 +29,51 @@ css = """
         font-weight: 600 !important;
     }
     [data-baseweb="tab-list"] button[aria-selected="true"] p {
-        color: #10b981 !important; /* Verde destaque */
-    }
-    [data-baseweb="tab-highlight"] {
-        background-color: #10b981 !important;
+        color: #10b981 !important;
     }
     
-    /* Caixas de input escuro */
+    /* --- CORREÇÃO DOS INPUTS DE NÚMEROS E TEXTOS --- */
     .stTextInput>div>div>input, .stNumberInput>div>div>input {
         background-color: #1e293b !important;
         color: #ffffff !important;
         border: 1px solid #334155 !important;
-        border-radius: 8px;
-    }
-
-    /* CORREÇÃO CRÍTICA: Caixas de Seleção (Dropdowns) e seus Menus */
-    div[data-baseweb="select"] > div {
-        background-color: #1e293b !important;
-        color: #ffffff !important;
-        border: 1px solid #334155 !important;
     }
     
-    /* O menu que abre ao clicar na caixa de seleção */
-    div[data-baseweb="popover"] div[role="listbox"],
-    div[data-baseweb="popover"] ul,
+    /* --- CORREÇÃO CRÍTICA: MENUS SUSPENSOS (DROPDOWNS) --- */
+    /* A caixa onde o item selecionado aparece */
+    div[data-baseweb="select"] > div {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+    }
+    div[data-baseweb="select"] span {
+        color: #ffffff !important;
+    }
+    
+    /* O menu que abre ao clicar */
+    div[data-baseweb="popover"] {
+        background-color: #1e293b !important;
+    }
+    div[data-baseweb="popover"] ul {
+        background-color: #1e293b !important;
+    }
     div[data-baseweb="popover"] li {
         background-color: #1e293b !important;
         color: #ffffff !important;
     }
-    
-    /* Texto dentro das opções do menu */
-    div[data-baseweb="popover"] li div,
-    div[data-baseweb="popover"] li span {
-        color: #ffffff !important;
-    }
-    
-    /* Efeito ao passar o rato por cima da opção */
     div[data-baseweb="popover"] li:hover {
         background-color: #334155 !important;
     }
+    div[data-baseweb="popover"] li span {
+        color: #ffffff !important;
+    }
 
-    /* Fundo da barra lateral (Sidebar) */
+    /* Barra lateral (Sidebar) */
     [data-testid="stSidebar"] {
         background-color: #0b0f19 !important;
         border-right: 1px solid #1e293b;
     }
     
-    /* Resultados (Métricas) em destaque verde */
+    /* Métricas (Resultados) */
     [data-testid="stMetricValue"] {
         font-size: 1.8rem;
         font-weight: bold;
@@ -127,7 +125,6 @@ with tab1:
     st.session_state.latitude = lat
     st.session_state.longitude = lon
 
-    # Mapa Interativo
     st.markdown("### 🗺️ Mapa da Instalação")
     try:
         df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
@@ -135,11 +132,9 @@ with tab1:
     except Exception as e:
         st.warning("O mapa interativo não pôde ser carregado (comum em alguns telemóveis).")
     
-    # Botão de GPS (Solução universal para telemóveis)
     link_google_maps = f"https://www.google.com/maps?q={lat},{lon}"
     st.link_button("📍 Abrir localização no GPS (Google Maps)", link_google_maps)
 
-    # Cálculo do Ângulo Ótimo
     st.divider()
     st.subheader("📐 Otimização do Ângulo de Inclinação")
     
@@ -191,7 +186,6 @@ with tab2:
     c3.metric("Área Total", f"{(numero_paineis * area_painel):.1f} m²")
     c4.metric("Geração Mensal Estimada", f"{geracao_real_estimada:.0f} kWh")
 
-    # GRÁFICO DE EFICIÊNCIA
     st.subheader("📊 Curva de Geração Diária (Estimada)")
     horas = list(range(6, 19))
     geracao_hora = [max(0, (potencia_kwp * irradiacao / 6) * math.sin((h - 6) * math.pi / 12)) for h in horas]
