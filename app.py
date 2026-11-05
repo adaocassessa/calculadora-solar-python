@@ -5,15 +5,20 @@ import pandas as pd
 # Configuração da página
 st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
 
-# --- CÓDIGO CSS PARA DARK MODE PREMIUM ---
+# --- CÓDIGO CSS PARA DARK MODE PREMIUM E CORREÇÃO DE DROPDOWNS ---
 css = """
 <style>
+    /* Fundo escuro elegante */
     [data-testid="stAppViewContainer"] {
         background-color: #0e1117 !important;
     }
+    
+    /* Letras claras para leitura no escuro */
     h1, h2, h3, h4, h5, h6, p, span, label, div, li {
         color: #e2e8f0 !important;
     }
+    
+    /* Abas (Tabs) com visual moderno */
     [data-baseweb="tab-list"] {
         background-color: #1e293b !important;
         border-radius: 10px;
@@ -24,21 +29,53 @@ css = """
         font-weight: 600 !important;
     }
     [data-baseweb="tab-list"] button[aria-selected="true"] p {
-        color: #10b981 !important;
+        color: #10b981 !important; /* Verde destaque */
     }
     [data-baseweb="tab-highlight"] {
         background-color: #10b981 !important;
     }
-    .stTextInput>div>div>input, .stNumberInput>div>div>input, .stSelectbox>div>div>div {
+    
+    /* Caixas de input escuro */
+    .stTextInput>div>div>input, .stNumberInput>div>div>input {
         background-color: #1e293b !important;
         color: #ffffff !important;
         border: 1px solid #334155 !important;
         border-radius: 8px;
     }
+
+    /* CORREÇÃO CRÍTICA: Caixas de Seleção (Dropdowns) e seus Menus */
+    div[data-baseweb="select"] > div {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        border: 1px solid #334155 !important;
+    }
+    
+    /* O menu que abre ao clicar na caixa de seleção */
+    div[data-baseweb="popover"] div[role="listbox"],
+    div[data-baseweb="popover"] ul,
+    div[data-baseweb="popover"] li {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+    }
+    
+    /* Texto dentro das opções do menu */
+    div[data-baseweb="popover"] li div,
+    div[data-baseweb="popover"] li span {
+        color: #ffffff !important;
+    }
+    
+    /* Efeito ao passar o rato por cima da opção */
+    div[data-baseweb="popover"] li:hover {
+        background-color: #334155 !important;
+    }
+
+    /* Fundo da barra lateral (Sidebar) */
     [data-testid="stSidebar"] {
         background-color: #0b0f19 !important;
         border-right: 1px solid #1e293b;
     }
+    
+    /* Resultados (Métricas) em destaque verde */
     [data-testid="stMetricValue"] {
         font-size: 1.8rem;
         font-weight: bold;
@@ -90,7 +127,7 @@ with tab1:
     st.session_state.latitude = lat
     st.session_state.longitude = lon
 
-    # Mapa Interativo (Otimizado para PC)
+    # Mapa Interativo
     st.markdown("### 🗺️ Mapa da Instalação")
     try:
         df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
