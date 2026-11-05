@@ -2,95 +2,12 @@ import streamlit as st
 import math
 import pandas as pd
 
-# Configuração da página
+# Configuração da página (O Streamlit vai gerir as cores automaticamente)
 st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
-
-# --- CÓDIGO CSS PARA FORÇAR O MODO ESCURO EM TODOS OS COMPONENTES ---
-css = """
-<style>
-    /* Fundo geral escuro */
-    [data-testid="stAppViewContainer"] {
-        background-color: #0e1117 !important;
-    }
-    
-    /* Letras claras */
-    h1, h2, h3, h4, h5, h6, p, span, label, div, li {
-        color: #e2e8f0 !important;
-    }
-    
-    /* Abas (Tabs) */
-    [data-baseweb="tab-list"] {
-        background-color: #1e293b !important;
-        border-radius: 10px;
-        padding: 5px;
-    }
-    [data-baseweb="tab-list"] button p {
-        color: #94a3b8 !important;
-        font-weight: 600 !important;
-    }
-    [data-baseweb="tab-list"] button[aria-selected="true"] p {
-        color: #10b981 !important;
-    }
-    
-    /* --- CORREÇÃO DOS INPUTS DE NÚMEROS E TEXTOS --- */
-    .stTextInput>div>div>input, .stNumberInput>div>div>input {
-        background-color: #1e293b !important;
-        color: #ffffff !important;
-        border: 1px solid #334155 !important;
-    }
-    
-    /* --- CORREÇÃO CRÍTICA: MENUS SUSPENSOS (DROPDOWNS) --- */
-    /* A caixa onde o item selecionado aparece */
-    div[data-baseweb="select"] > div {
-        background-color: #1e293b !important;
-        border-color: #334155 !important;
-    }
-    div[data-baseweb="select"] span {
-        color: #ffffff !important;
-    }
-    
-    /* O menu que abre ao clicar */
-    div[data-baseweb="popover"] {
-        background-color: #1e293b !important;
-    }
-    div[data-baseweb="popover"] ul {
-        background-color: #1e293b !important;
-    }
-    div[data-baseweb="popover"] li {
-        background-color: #1e293b !important;
-        color: #ffffff !important;
-    }
-    div[data-baseweb="popover"] li:hover {
-        background-color: #334155 !important;
-    }
-    div[data-baseweb="popover"] li span {
-        color: #ffffff !important;
-    }
-
-    /* Barra lateral (Sidebar) */
-    [data-testid="stSidebar"] {
-        background-color: #0b0f19 !important;
-        border-right: 1px solid #1e293b;
-    }
-    
-    /* Métricas (Resultados) */
-    [data-testid="stMetricValue"] {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: #10b981 !important;
-    }
-    [data-testid="stMetricLabel"] p {
-        color: #94a3b8 !important;
-        font-weight: 500 !important;
-    }
-</style>
-"""
-st.markdown(css, unsafe_allow_html=True)
 
 st.title("🌍 EcoRenováveis Pro: Engenharia de Precisão")
 st.write("Plataforma avançada com geolocalização, cálculo de inclinação solar e gestão de sistemas.")
 
-# Criando as abas
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     "📍 Mapa e Localização", 
     "☀️ Solar Fotovoltaico", 
@@ -105,22 +22,19 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11 = st.tabs([
     "💼 Meu Negócio"
 ])
 
-# Variáveis globais
 if 'latitude' not in st.session_state: st.session_state.latitude = -8.8390
 if 'longitude' not in st.session_state: st.session_state.longitude = 13.2894
 if 'consumo_mensal' not in st.session_state: st.session_state.consumo_mensal = 300.0
 
 with tab1:
     st.subheader("📍 Geolocalização do Projeto")
-    st.write("Insira as coordenadas do local da instalação para calcular o ângulo solar ideal.")
-    
     col_geo1, col_geo2, col_geo3 = st.columns(3)
     with col_geo1:
-        lat = st.number_input("Latitude (Ex: -8.83 para Luanda)", min_value=-90.0, max_value=90.0, value=st.session_state.latitude, format="%.4f")
+        lat = st.number_input("Latitude", min_value=-90.0, max_value=90.0, value=st.session_state.latitude, format="%.4f")
     with col_geo2:
-        lon = st.number_input("Longitude (Ex: 13.28 para Luanda)", min_value=-180.0, max_value=180.0, value=st.session_state.longitude, format="%.4f")
+        lon = st.number_input("Longitude", min_value=-180.0, max_value=180.0, value=st.session_state.longitude, format="%.4f")
     with col_geo3:
-        altitude = st.number_input("Altitude (metros)", min_value=0, value=50, step=10)
+        altitude = st.number_input("Altitude (m)", min_value=0, value=50, step=10)
     
     st.session_state.latitude = lat
     st.session_state.longitude = lon
@@ -130,173 +44,119 @@ with tab1:
         df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
         st.map(df_mapa, zoom=12)
     except Exception as e:
-        st.warning("O mapa interativo não pôde ser carregado (comum em alguns telemóveis).")
+        st.warning("O mapa interativo não pôde ser carregado.")
     
     link_google_maps = f"https://www.google.com/maps?q={lat},{lon}"
-    st.link_button("📍 Abrir localização no GPS (Google Maps)", link_google_maps)
+    st.link_button("📍 Abrir localização no GPS", link_google_maps)
 
     st.divider()
-    st.subheader("📐 Otimização do Ângulo de Inclinação")
-    
     angulo_otimo = abs(lat) + 5 if lat < 0 else abs(lat) - 5
     direcao = "Norte" if lat < 0 else "Sul"
-    
     col_ang1, col_ang2 = st.columns(2)
     col_ang1.metric("Ângulo de Inclinação Ideal", f"{angulo_otimo:.1f}°")
     col_ang2.metric("Direção do Painel", direcao)
-    st.info(f"💡 Para maximizar a captação, os painéis devem estar inclinados a {angulo_otimo:.1f}° e virados para o {direcao}.")
 
 with tab2:
-    st.subheader("Dimensionamento Solar com Perdas por Sombreamento")
-    
+    st.subheader("Dimensionamento Solar")
     col1, col2, col3 = st.columns(3)
     with col1:
         consumo_mensal = st.number_input("Consumo mensal (kWh)", min_value=1.0, value=300.0, step=10.0)
         st.session_state.consumo_mensal = consumo_mensal
     with col2:
-        irradiacao = st.number_input("Irradiação solar local (kWh/m²/dia)", min_value=1.0, value=5.5, step=0.1)
+        irradiacao = st.number_input("Irradiação solar", min_value=1.0, value=5.5, step=0.1)
     with col3:
-        sombreamento = st.slider("Perda por Sombreamento (%)", min_value=0, max_value=50, value=10, step=5)
+        sombreamento = st.slider("Sombreamento (%)", min_value=0, max_value=50, value=10, step=5)
 
-    st.subheader("Escolha do Painel Solar")
-    tipo_painel = st.selectbox("Tecnologia do Painel", [
-        "Monocristalino (Alta Eficiência)", 
-        "Policristalino (Custo-benefício)", 
-        "Filme Fino (Flexível)"
-    ])
-
+    tipo_painel = st.selectbox("Tecnologia do Painel", ["Monocristalino", "Policristalino", "Filme Fino"])
     col4, col5 = st.columns(2)
     with col4:
         potencia_painel = st.number_input("Potência do painel (W)", min_value=100, value=550, step=10)
     with col5:
-        area_painel = st.number_input("Área de cada painel (m²)", min_value=0.5, value=2.6, step=0.1)
+        area_painel = st.number_input("Área (m²)", min_value=0.5, value=2.6, step=0.1)
 
     fator_sombreamento = 1 - (sombreamento / 100)
     performance_ratio = 0.80 * fator_sombreamento
-    
     consumo_diario = consumo_mensal / 30
     potencia_kwp = consumo_diario / (irradiacao * performance_ratio)
     numero_paineis = math.ceil((potencia_kwp * 1000) / potencia_painel)
-    geracao_real_estimada = potencia_kwp * irradiacao * performance_ratio * 30
     
     st.divider()
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Potência Necessária", f"{potencia_kwp:.2f} kWp")
-    c2.metric("Número de Painéis", f"{numero_paineis} un.")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Potência", f"{potencia_kwp:.2f} kWp")
+    c2.metric("Painéis", f"{numero_paineis} un.")
     c3.metric("Área Total", f"{(numero_paineis * area_painel):.1f} m²")
-    c4.metric("Geração Mensal Estimada", f"{geracao_real_estimada:.0f} kWh")
-
-    st.subheader("📊 Curva de Geração Diária (Estimada)")
-    horas = list(range(6, 19))
-    geracao_hora = [max(0, (potencia_kwp * irradiacao / 6) * math.sin((h - 6) * math.pi / 12)) for h in horas]
-    df_grafico = pd.DataFrame({"Hora do Dia": horas, "Geração (kW)": geracao_hora})
-    st.line_chart(df_grafico.set_index("Hora do Dia"), color="#10b981")
 
 with tab3:
-    st.subheader("Dimensionamento Eólico")
-    tipo_turbina = st.selectbox("Tipo de Turbina Eólica", ["Eixo Horizontal (Hélice)", "Eixo Vertical (Ventos fracos)"])
+    st.subheader("Eólico")
+    tipo_turbina = st.selectbox("Tipo de Turbina", ["Eixo Horizontal", "Eixo Vertical"])
     col6, col7 = st.columns(2)
     with col6:
-        velocidade_vento = st.number_input("Velocidade do vento (m/s)", min_value=1.0, value=6.0, step=0.5)
+        velocidade_vento = st.number_input("Vento (m/s)", min_value=1.0, value=6.0, step=0.5)
         raio_turbina = st.number_input("Raio das pás (m)", min_value=0.5, value=2.0, step=0.1)
     with col7:
         eficiencia_turbina = st.slider("Eficiência (Cp)", min_value=0.20, max_value=0.59, value=0.40, step=0.01)
     area_varredura = math.pi * (raio_turbina ** 2)
     potencia_eolica_w = 0.5 * 1.225 * area_varredura * (velocidade_vento ** 3) * eficiencia_turbina
-    st.divider()
-    st.metric("Potência Elétrica Gerada", f"{potencia_eolica_w:.0f} W")
+    st.metric("Potência", f"{potencia_eolica_w:.0f} W")
 
 with tab4:
-    st.subheader("Energia Hídrica")
-    tipo_hidro = st.selectbox("Tipo de Turbina Hídrica", ["Pelton (Alta Queda)", "Francis (Média)", "Kaplan (Baixa Queda)"])
-    col12, col13 = st.columns(2)
-    with col12:
-        vazao = st.number_input("Vazão de água (m³/s)", min_value=0.01, value=500.0, step=10.0)
-        queda = st.number_input("Altura da queda (metros)", min_value=0.5, value=100.0, step=1.0)
-    with col13:
-        eficiencia_hidrica = st.slider("Eficiência", min_value=0.50, max_value=0.95, value=0.85, step=0.01)
+    st.subheader("Hídrica")
+    tipo_hidro = st.selectbox("Tipo de Turbina", ["Pelton", "Francis", "Kaplan"])
+    vazao = st.number_input("Vazão (m³/s)", min_value=0.01, value=500.0, step=10.0)
+    queda = st.number_input("Queda (m)", min_value=0.5, value=100.0, step=1.0)
+    eficiencia_hidrica = st.slider("Eficiência", min_value=0.50, max_value=0.95, value=0.85, step=0.01)
     potencia_hidrica_w = 1000 * 9.81 * vazao * queda * eficiencia_hidrica
-    potencia_hidrica_mw = potencia_hidrica_w / 1_000_000
-    st.divider()
-    st.metric("Potência Gerada", f"{potencia_hidrica_mw:.2f} MW" if potencia_hidrica_mw > 1 else f"{potencia_hidrica_w:.0f} W")
+    st.metric("Potência", f"{(potencia_hidrica_w / 1_000_000):.2f} MW")
 
 with tab5:
     st.subheader("Biomassa")
-    tipo_biomassa = st.selectbox("Tipo de Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"])
-    col14, col15 = st.columns(2)
-    with col14:
-        massa_residuo = st.number_input("Massa de resíduo por dia (kg)", min_value=1.0, value=1000.0, step=100.0)
-        poder_calorifico = st.number_input("Poder Calorífico (MJ/kg)", min_value=1.0, value=15.0, step=1.0)
-    with col15:
-        eficiencia_biomassa = st.slider("Eficiência", min_value=0.15, max_value=0.40, value=0.25, step=0.01)
-    energia_diaria_kwh = (massa_residuo * poder_calorifico * eficiencia_biomassa) / 3.6
-    potencia_biomassa_kw = energia_diaria_kwh / 24
-    st.divider()
-    st.metric("Potência Contínua Gerada", f"{potencia_biomassa_kw:.1f} kW")
+    tipo_biomassa = st.selectbox("Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"])
+    massa_residuo = st.number_input("Resíduo (kg/dia)", min_value=1.0, value=1000.0)
+    poder_calorifico = st.number_input("Poder Calorífico (MJ/kg)", min_value=1.0, value=15.0)
+    eficiencia_biomassa = st.slider("Eficiência", min_value=0.15, max_value=0.40, value=0.25)
+    st.metric("Potência", f"{((massa_residuo * poder_calorifico * eficiencia_biomassa) / 3.6) / 24:.1f} kW")
 
 with tab6:
-    st.subheader("Eletrotécnica Básica")
-    col8, col9 = st.columns(2)
-    with col8:
-        tensao = st.number_input("Tensão (V)", min_value=12.0, value=220.0, step=12.0)
-        potencia_equipamento = st.number_input("Potência (W)", min_value=1.0, value=1000.0, step=100.0)
-    with col9:
-        distancia_cabo = st.number_input("Distância do cabo (m)", min_value=1.0, value=20.0, step=1.0)
-        material_cabo = st.selectbox("Material", ["Cobre", "Alumínio"])
+    st.subheader("Eletrotécnica")
+    tensao = st.number_input("Tensão (V)", min_value=12.0, value=220.0)
+    potencia_equipamento = st.number_input("Potência (W)", min_value=1.0, value=1000.0)
+    distancia_cabo = st.number_input("Cabo (m)", min_value=1.0, value=20.0)
+    material_cabo = st.selectbox("Material", ["Cobre", "Alumínio"])
     corrente = potencia_equipamento / tensao
     resistividade = 0.0172 if material_cabo == "Cobre" else 0.0282
     area_cabo_mm2 = (2 * resistividade * distancia_cabo * corrente) / (tensao * 0.03)
-    st.divider()
-    e1, e2, e3 = st.columns(3)
-    e1.metric("Corrente", f"{corrente:.2f} A")
-    e2.metric("Resistência", f"{(tensao / corrente):.2f} Ω" if corrente > 0 else "0")
-    e3.metric("Cabo Mínimo", f"{area_cabo_mm2:.2f} mm²")
+    st.metric("Cabo Mínimo", f"{area_cabo_mm2:.2f} mm²")
 
 with tab7:
     st.subheader("Baterias")
-    tipo_bateria = st.selectbox("Tipo", ["Lítio (DoD 90%)", "Chumbo-Ácido (DoD 50%)"])
-    tensao_sistema = st.selectbox("Tensão das baterias (V)", [12, 24, 48], index=2)
-    capacidade_bateria = st.number_input("Capacidade unitária (Ah)", min_value=50, value=200, step=50)
-    dias_autonomia = st.number_input("Dias de autonomia", min_value=1, max_value=5, value=1, step=1)
+    tipo_bateria = st.selectbox("Tipo", ["Lítio", "Chumbo-Ácido"])
+    tensao_sistema = st.selectbox("Tensão (V)", [12, 24, 48], index=2)
+    capacidade_bateria = st.number_input("Capacidade (Ah)", min_value=50, value=200)
+    dias_autonomia = st.number_input("Dias", min_value=1, max_value=5, value=1)
     dod = 0.90 if "Lítio" in tipo_bateria else 0.50
-    consumo_diario_bat = st.session_state.consumo_mensal / 30
-    capacidade_total_ah = (consumo_diario_bat * 1000 * dias_autonomia) / (tensao_sistema * dod)
-    numero_baterias = math.ceil(capacidade_total_ah / capacidade_bateria)
-    st.divider()
-    st.metric("Baterias Necessárias", f"{numero_baterias} un.")
+    numero_baterias = math.ceil(((st.session_state.consumo_mensal / 30 * 1000 * dias_autonomia) / (tensao_sistema * dod)) / capacidade_bateria)
+    st.metric("Baterias", f"{numero_baterias} un.")
 
 with tab8:
-    st.subheader("🔌 Inversores")
-    tipo_inversor = st.selectbox("Tipo de Inversor", ["Híbrido (Rede + Baterias)", "Off-Grid", "On-Grid"])
-    col10, col11 = st.columns(2)
-    with col10:
-        carga_total = st.number_input("Carga contínua total (W)", min_value=100, value=2000, step=100)
-    with col11:
-        tem_motores = st.selectbox("Tem motores? (Geleira/Bomba)", ["Sim", "Não"])
-    fator = 1.25
-    p_continua = carga_total * fator
-    p_pico = carga_total * 3.0 if tem_motores == "Sim" else p_continua
-    st.divider()
-    i1, i2 = st.columns(2)
-    i1.metric("Potência Contínua", f"{p_continua:.0f} W")
-    i2.metric("Potência de Pico", f"{p_pico:.0f} W")
+    st.subheader("Inversores")
+    tipo_inversor = st.selectbox("Tipo", ["Híbrido", "Off-Grid", "On-Grid"])
+    carga_total = st.number_input("Carga (W)", min_value=100, value=2000)
+    tem_motores = st.selectbox("Tem motores?", ["Sim", "Não"])
+    p_pico = carga_total * 3.0 if tem_motores == "Sim" else carga_total * 1.25
+    st.metric("Pico", f"{p_pico:.0f} W")
 
 with tab9:
-    st.subheader("🛠️ Manutenção")
-    tipo_manutencao = st.selectbox("Tipo de Manutenção", ["Preventiva", "Corretiva", "Preditiva"])
-    st.markdown("### Checklist")
-    st.checkbox("Limpeza dos painéis (remoção de pó)", value=True)
-    st.checkbox("Verificação de cabos e conectores")
-    st.checkbox("Inspeção do inversor")
+    st.subheader("Manutenção")
+    tipo_manutencao = st.selectbox("Tipo", ["Preventiva", "Corretiva", "Preditiva"])
+    st.checkbox("Limpeza dos painéis")
+    st.checkbox("Verificação de cabos")
 
 with tab10:
-    st.subheader("📚 Guia do Técnico")
-    st.info("O ângulo de inclinação ideal depende da latitude. Em Angola, os painéis devem apontar para o Norte e ter uma inclinação igual à latitude + 5°.")
+    st.subheader("Guia")
+    st.info("Em Angola, os painéis apontam para o Norte com inclinação igual à latitude + 5°.")
 
 with tab11:
-    st.subheader("💼 Meu Negócio")
-    st.write("Projeção de faturamento da plataforma.")
-    st.metric("Faturamento Projetado (Ano 1)", "$ 3.000,00 (Exemplo)")
+    st.subheader("Meu Negócio")
+    st.metric("Faturamento Estimado (Ano 1)", "$ 3.000,00")
 
 st.sidebar.title("EcoRenováveis Pro")
-st.sidebar.info("Desenvolvido por **Adão Cassessa**.\n\nEngenharia de Precisão.")
