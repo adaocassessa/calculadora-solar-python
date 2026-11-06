@@ -160,3 +160,6 @@ with tab11:
     st.metric("Faturamento Estimado (Ano 1)", "$ 3.000,00")
 
 st.sidebar.title("EcoRenováveis Pro")
+st.sidebar.title("EcoRenováveis Pro")
+st.sidebar.info("Desenvolvido por **Adão Cassessa**.\n\nTécnico em Energias Renováveis e Desenvolvedor Python.\n\nContacto: +244 946 419 656")
+st.sidebar.caption("© 2026 EcoRenováveis. Todos os direitos reservados.")
