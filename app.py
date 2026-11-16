@@ -2,231 +2,359 @@ import streamlit as st
 import math
 import pandas as pd
 
-# Configuração da página
 st.set_page_config(page_title="EcoRenováveis Pro - Engenharia", page_icon="🌍", layout="wide")
 
 st.title("🌍 EcoRenováveis Pro: Engenharia de Precisão")
-st.write("Plataforma avançada com geolocalização, cálculo de inclinação solar e gestão de sistemas.")
+st.write("Plataforma global de engenharia para dimensionamento de sistemas renováveis.")
 
-# Criando as abas
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12 = st.tabs([
-    "📍 Mapa e Localização", 
-    "☀️ Solar Fotovoltaico", 
-    "🌡️ Energia Térmica",
-    "🌬️ Energia Eólica", 
+# Criando as 14 abas
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10, tab11, tab12, tab13, tab14 = st.tabs([
+    "🌟 Guia Automático", 
+    "📍 Mapa", 
+    "☀️ Solar (Manual)", 
+    "🌡️ Térmica",
+    "🌬️ Eólica", 
     "💧 Hídrica", 
     "🌱 Biomassa",
     "⚡ Eletrotécnica",
     "🔋 Baterias",
     "🔌 Inversores",
+    "⚙️ Geradores",
     "🛠️ Manutenção",
-    "📚 Guia do Técnico",
-    "💼 Meu Negócio"
+    "🔧 Executivo Completo",
+    "💼 Negócio"
 ])
 
 if 'latitude' not in st.session_state: st.session_state.latitude = -8.8390
 if 'longitude' not in st.session_state: st.session_state.longitude = 13.2894
-if 'consumo_mensal' not in st.session_state: st.session_state.consumo_mensal = 300.0
 
+# ==========================================
+# ABA 1: GUIA AUTOMÁTICO
+# ==========================================
 with tab1:
-    st.subheader("📍 Geolocalização do Projeto")
-    col_geo1, col_geo2, col_geo3 = st.columns(3)
-    with col_geo1:
-        lat = st.number_input("Latitude", min_value=-90.0, max_value=90.0, value=st.session_state.latitude, format="%.4f")
-    with col_geo2:
-        lon = st.number_input("Longitude", min_value=-180.0, max_value=180.0, value=st.session_state.longitude, format="%.4f")
-    with col_geo3:
-        altitude = st.number_input("Altitude (m)", min_value=0, value=50, step=10)
+    st.subheader("🌟 Assistente de Criação de Projeto (Tudo-em-Um)")
+    tipo_sistema_guia = st.selectbox("Selecione o Tipo de Sistema a Dimensionar", ["Solar Fotovoltaico", "Energia Eólica", "Energia Hídrica", "Energia Térmica", "Biomassa"], key="t1_tipo")
     
-    st.session_state.latitude = lat
-    st.session_state.longitude = lon
+    if tipo_sistema_guia == "Solar Fotovoltaico":
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            c_auto = st.number_input("Consumo Mensal (kWh)", value=300.0, key="t1_c")
+            i_auto = st.number_input("Irradiação (kWh/m²/dia)", value=5.5, key="t1_i")
+        with col2:
+            s_auto = st.slider("Sombreamento (%)", 0, 50, 10, key="t1_s")
+            tp_auto = st.selectbox("Tipo de Painel", ["Monocristalino", "Policristalino", "Filme Fino"], key="t1_tp")
+            pp_auto = st.number_input("Potência do Painel (W)", value=550, key="t1_pp")
+        with col3:
+            carga_auto = st.number_input("Carga de Pico (W)", value=3000, key="t1_carga")
+            mot_auto = st.selectbox("Tem motores?", ["Não", "Sim"], key="t1_mot")
+            tb_auto = st.selectbox("Bateria", ["Lítio", "Chumbo-Ácido"], key="t1_tb")
+        
+        if st.button("Calcular Projeto", key="btn_auto_solar"):
+            pr = 0.8 * (1 - s_auto/100)
+            kwp = (c_auto/30) / (i_auto * pr)
+            p_num = math.ceil((kwp*1000)/pp_auto)
+            inv = carga_auto * (3.0 if mot_auto == "Sim" else 1.25)
+            dod = 0.9 if tb_auto == "Lítio" else 0.5
+            bat = math.ceil(((c_auto/30*1000*1)/(48*dod))/200)
+            
+            st.markdown("---")
+            st.markdown("### 🛒 Lista de Compras Final")
+            col_res1, col_res2, col_res3 = st.columns(3)
+            col_res1.metric("Painéis Solares", f"{p_num} un.")
+            col_res2.metric("Inversor", f"{inv/1000:.1f} kW")
+            col_res3.metric("Baterias", f"{bat} un.")
 
-    st.markdown("### 🗺️ Mapa da Instalação")
-    try:
-        df_mapa = pd.DataFrame({'lat': [lat], 'lon': [lon]})
-        st.map(df_mapa, zoom=12)
-    except Exception as e:
-        st.warning("O mapa interativo não pôde ser carregado.")
-    
-    link_google_maps = f"https://www.google.com/maps?q={lat},{lon}"
-    st.link_button("📍 Abrir localização no GPS", link_google_maps)
+    elif tipo_sistema_guia == "Energia Eólica":
+        col1, col2 = st.columns(2)
+        with col1:
+            carga_eol = st.number_input("Carga Pico (W)", value=3000, key="t1_eol_carga")
+            vento_eol = st.number_input("Vento (m/s)", value=6.0, key="t1_eol_v")
+        with col2:
+            raio_eol = st.number_input("Raio Pás (m)", value=2.0, key="t1_eol_r")
+            tp_eol = st.selectbox("Tipo de Turbina", ["Eixo Horizontal", "Eixo Vertical"], key="t1_eol_t")
+        if st.button("Calcular Projeto", key="btn_auto_eolico"):
+            cp = 0.40 if tp_eol == "Eixo Horizontal" else 0.25
+            pot = 0.5 * 1.225 * (math.pi * raio_eol**2) * (vento_eol**3) * cp
+            st.markdown("---")
+            st.markdown("### 🛒 Lista de Compras Final")
+            col_res1, col_res2 = st.columns(2)
+            col_res1.metric("Turbina Eólica", f"{pot/1000:.1f} kW")
+            col_res2.metric("Inversor", f"{(carga_eol*1.25)/1000:.1f} kW")
 
-    st.divider()
-    angulo_otimo = abs(lat) + 5 if lat < 0 else abs(lat) - 5
-    direcao = "Norte" if lat < 0 else "Sul"
-    col_ang1, col_ang2 = st.columns(2)
-    col_ang1.metric("Ângulo de Inclinação Ideal", f"{angulo_otimo:.1f}°")
-    col_ang2.metric("Direção do Painel", direcao)
+    elif tipo_sistema_guia == "Energia Hídrica":
+        col1, col2 = st.columns(2)
+        with col1:
+            vazao_hid = st.number_input("Vazão (m³/s)", value=10.0, key="t1_hid_q")
+            queda_hid = st.number_input("Queda (m)", value=20.0, key="t1_hid_h")
+        with col2:
+            tp_hid = st.selectbox("Tipo de Turbina", ["Pelton", "Francis", "Kaplan"], key="t1_hid_t")
+        if st.button("Calcular Projeto", key="btn_auto_hidrico"):
+            ef = 0.90 if tp_hid == "Pelton" else (0.92 if tp_hid == "Francis" else 0.94)
+            pot = 1000 * 9.81 * vazao_hid * queda_hid * ef
+            st.markdown("---")
+            st.markdown("### 🛒 Resultado Final")
+            st.metric("Potência da Turbina Hídrica", f"{pot/1000:.1f} kW")
 
+    elif tipo_sistema_guia == "Energia Térmica":
+        col1, col2 = st.columns(2)
+        with col1:
+            vol_term = st.number_input("Volume Água (L/dia)", value=200, key="t1_term_v")
+            dt_term = st.number_input("Aumento Temp (°C)", value=40, key="t1_term_dt")
+        with col2:
+            tp_term = st.selectbox("Tipo de Coletor", ["Plano", "Tubo a Vácuo"], key="t1_term_t")
+        if st.button("Calcular Projeto", key="btn_auto_termico"):
+            ef = 0.6 if tp_term == "Plano" else 0.75
+            area = ((vol_term * 1.16 * dt_term) / 1000) / (5.5 * ef)
+            st.markdown("---")
+            st.markdown("### 🛒 Resultado Final")
+            st.metric("Área de Coletores Solares", f"{area:.1f} m²")
+
+    elif tipo_sistema_guia == "Biomassa":
+        col1, col2 = st.columns(2)
+        with col1:
+            massa_bio = st.number_input("Massa Resíduo (kg/dia)", value=1000.0, key="t1_bio_m")
+            poder_bio = st.number_input("Poder Calorífico (MJ/kg)", value=15.0, key="t1_bio_p")
+        with col2:
+            tp_bio = st.selectbox("Tipo de Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"], key="t1_bio_t")
+        if st.button("Calcular Projeto", key="btn_auto_bio"):
+            ef = 0.25 if tp_bio == "Combustão Direta" else (0.35 if tp_bio == "Gaseificação" else 0.65)
+            pot = ((massa_bio * poder_bio * ef) / 3.6) / 24
+            st.markdown("---")
+            st.markdown("### 🛒 Resultado Final")
+            st.metric("Potência Contínua Gerada", f"{pot:.1f} kW")
+
+# ==========================================
+# ABA 2: MAPA
+# ==========================================
 with tab2:
-    st.subheader("Dimensionamento Solar Fotovoltaico")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        consumo_mensal = st.number_input("Consumo mensal (kWh)", min_value=1.0, value=300.0, step=10.0)
-        st.session_state.consumo_mensal = consumo_mensal
-    with col2:
-        irradiacao = st.number_input("Irradiação solar (kWh/m²/dia)", min_value=1.0, value=5.5, step=0.1)
-    with col3:
-        sombreamento = st.slider("Perdas por Sombreamento (%)", min_value=0, max_value=50, value=10, step=5)
+    lat = st.number_input("Latitude", value=st.session_state.latitude, key="t2_lat")
+    lon = st.number_input("Longitude", value=st.session_state.longitude, key="t2_lon")
+    st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}), zoom=12)
 
-    tipo_painel = st.selectbox("Tecnologia do Painel", ["Monocristalino", "Policristalino", "Filme Fino"])
-    col4, col5 = st.columns(2)
-    with col4:
-        potencia_painel = st.number_input("Potência do painel (W)", min_value=100, value=550, step=10)
-    with col5:
-        area_painel = st.number_input("Área (m²)", min_value=0.5, value=2.6, step=0.1)
-
-    fator_sombreamento = 1 - (sombreamento / 100)
-    performance_ratio = 0.80 * fator_sombreamento
-    consumo_diario = consumo_mensal / 30
-    potencia_kwp = consumo_diario / (irradiacao * performance_ratio)
-    numero_paineis = math.ceil((potencia_kwp * 1000) / potencia_painel)
-    
-    st.divider()
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Potência", f"{potencia_kwp:.2f} kWp")
-    c2.metric("Painéis", f"{numero_paineis} un.")
-    c3.metric("Área Total", f"{(numero_paineis * area_painel):.1f} m²")
-
+# ==========================================
+# ABA 3: SOLAR MANUAL (Completamente Corrigida)
+# ==========================================
 with tab3:
-    st.subheader("🌡️ Energia Térmica (Aquecimento Solar de Água)")
-    st.write("Cálculo para coletores solares térmicos (aquecimento de água sanitária ou piscinas).")
+    st.subheader("☀️ Dimensionamento Solar Fotovoltaico (Manual)")
+    col1, col2 = st.columns(2)
+    with col1:
+        c_sol = st.number_input("Consumo (kWh)", value=300.0, key="t3_c")
+        i_sol = st.number_input("Irradiação (kWh/m²/dia)", value=5.5, key="t3_i")
+        s_sol = st.slider("Sombreamento (%)", 0, 50, 10, key="t3_s")
+    with col2:
+        tp_sol = st.selectbox("Tipo de Painel", ["Monocristalino", "Policristalino", "Filme Fino"], key="t3_tp")
+        pp_sol = st.number_input("Potência Painel (W)", value=550, key="t3_pp")
+        a_sol = st.number_input("Área Painel (m²)", value=2.6, key="t3_a")
     
-    col13, col14 = st.columns(2)
-    with col13:
-        vol_agua = st.number_input("Volume de água a aquecer (Litros/dia)", min_value=10, value=200, step=50)
-        temp_inicial = st.number_input("Temperatura inicial da água (°C)", min_value=10, value=20, step=1)
-    with col14:
-        temp_final = st.number_input("Temperatura desejada (°C)", min_value=30, value=60, step=1)
-        eficiencia_termica = st.slider("Eficiência do sistema térmico", min_value=0.30, max_value=0.80, value=0.60, step=0.05)
+    pr_sol = 0.8 * (1 - s_sol/100)
+    kwp_sol = (c_sol/30) / (i_sol * pr_sol)
+    num_sol = math.ceil((kwp_sol*1000)/pp_sol)
+    st.metric("Potência Necessária", f"{kwp_sol:.2f} kWp")
+    st.metric("Painéis Necessários", f"{num_sol} un. (Área total: {num_sol*a_sol:.1f} m²)")
 
-    delta_t = temp_final - temp_inicial
-    energia_necessaria_kwh = (vol_agua * 1.16 * delta_t) / 1000
-    area_coletor_necessaria = energia_necessaria_kwh / (irradiacao * eficiencia_termica)
-
-    st.divider()
-    t1, t2 = st.columns(2)
-    t1.metric("Energia Diária Necessária", f"{energia_necessaria_kwh:.2f} kWh/dia")
-    t2.metric("Área de Coletores Solares", f"{area_coletor_necessaria:.2f} m²")
-    st.info(f"💡 Para aquecer {vol_agua}L de água, você precisará de aproximadamente {area_coletor_necessaria:.1f} m² de coletores solares térmicos.")
-
+# ==========================================
+# ABA 4: TÉRMICA MANUAL (Completamente Corrigida)
+# ==========================================
 with tab4:
-    st.subheader("Energia Eólica")
-    tipo_turbina = st.selectbox("Tipo de Turbina", ["Eixo Horizontal", "Eixo Vertical"])
-    col6, col7 = st.columns(2)
-    with col6:
-        velocidade_vento = st.number_input("Vento (m/s)", min_value=1.0, value=6.0, step=0.5)
-        raio_turbina = st.number_input("Raio das pás (m)", min_value=0.5, value=2.0, step=0.1)
-    with col7:
-        eficiencia_turbina = st.slider("Eficiência (Cp)", min_value=0.20, max_value=0.59, value=0.40, step=0.01)
-    area_varredura = math.pi * (raio_turbina ** 2)
-    potencia_eolica_w = 0.5 * 1.225 * area_varredura * (velocidade_vento ** 3) * eficiencia_turbina
-    st.metric("Potência", f"{potencia_eolica_w:.0f} W")
+    st.subheader("🌡️ Energia Térmica (Manual)")
+    col1, col2 = st.columns(2)
+    with col1:
+        v_term = st.number_input("Volume Água (L/dia)", value=200, key="t4_v")
+        dt_term = st.number_input("Aumento Temp (°C)", value=40, key="t4_dt")
+    with col2:
+        tp_term_m = st.selectbox("Tipo de Coletor (Manual)", ["Plano", "Tubo a Vácuo"], key="t4_tp")
+    
+    ef_term = 0.6 if tp_term_m == "Plano" else 0.75
+    e_term = (v_term * 1.16 * dt_term) / 1000
+    area_term = e_term / (5.5 * ef_term)
+    st.metric("Área de Coletores", f"{area_term:.1f} m²")
 
+# ==========================================
+# ABA 5: EÓLICA MANUAL (Completamente Corrigida)
+# ==========================================
 with tab5:
-    st.subheader("Energia Hídrica")
-    tipo_hidro = st.selectbox("Tipo de Turbina", ["Pelton", "Francis", "Kaplan"])
-    vazao = st.number_input("Vazão (m³/s)", min_value=0.01, value=500.0, step=10.0)
-    queda = st.number_input("Queda (m)", min_value=0.5, value=100.0, step=1.0)
-    eficiencia_hidrica = st.slider("Eficiência", min_value=0.50, max_value=0.95, value=0.85, step=0.01)
-    potencia_hidrica_w = 1000 * 9.81 * vazao * queda * eficiencia_hidrica
-    st.metric("Potência", f"{(potencia_hidrica_w / 1_000_000):.2f} MW")
+    st.subheader("🌬️ Energia Eólica (Manual)")
+    v_eol_m = st.number_input("Vento (m/s)", value=6.0, key="t5_v")
+    r_eol_m = st.number_input("Raio Pás (m)", value=2.0, key="t5_r")
+    tp_eol_m = st.selectbox("Tipo de Turbina (Manual)", ["Eixo Horizontal", "Eixo Vertical"], key="t5_tp")
+    cp_eol_m = 0.40 if tp_eol_m == "Eixo Horizontal" else 0.25
+    p_eol_m = 0.5 * 1.225 * (math.pi * r_eol_m**2) * (v_eol_m**3) * cp_eol_m
+    st.metric("Potência Gerada", f"{p_eol_m:.0f} W")
 
+# ==========================================
+# ABA 6: HÍDRICA MANUAL (Completamente Corrigida)
+# ==========================================
 with tab6:
-    st.subheader("Biomassa")
-    tipo_biomassa = st.selectbox("Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"])
-    massa_residuo = st.number_input("Resíduo (kg/dia)", min_value=1.0, value=1000.0)
-    poder_calorifico = st.number_input("Poder Calorífico (MJ/kg)", min_value=1.0, value=15.0)
-    eficiencia_biomassa = st.slider("Eficiência", min_value=0.15, max_value=0.40, value=0.25)
-    st.metric("Potência", f"{((massa_residuo * poder_calorifico * eficiencia_biomassa) / 3.6) / 24:.1f} kW")
+    st.subheader("💧 Energia Hídrica (Manual)")
+    q_hid_m = st.number_input("Vazão (m³/s)", value=10.0, key="t6_q")
+    h_hid_m = st.number_input("Queda (m)", value=20.0, key="t6_h")
+    tp_hid_m = st.selectbox("Tipo de Turbina (Manual)", ["Pelton", "Francis", "Kaplan"], key="t6_tp")
+    
+    ef_hid_m = 0.90 if tp_hid_m == "Pelton" else (0.92 if tp_hid_m == "Francis" else 0.94)
+    p_hid_m = 1000 * 9.81 * q_hid_m * h_hid_m * ef_hid_m
+    st.metric("Potência Gerada", f"{(p_hid_m/1000):.1f} kW")
 
+# ==========================================
+# ABA 7: BIOMASSA MANUAL (Completamente Corrigida)
+# ==========================================
 with tab7:
-    st.subheader("Eletrotécnica")
-    tensao = st.number_input("Tensão (V)", min_value=12.0, value=220.0)
-    potencia_equipamento = st.number_input("Potência (W)", min_value=1.0, value=1000.0)
-    distancia_cabo = st.number_input("Cabo (m)", min_value=1.0, value=20.0)
-    material_cabo = st.selectbox("Material", ["Cobre", "Alumínio"])
-    corrente = potencia_equipamento / tensao
-    resistividade = 0.0172 if material_cabo == "Cobre" else 0.0282
-    area_cabo_mm2 = (2 * resistividade * distancia_cabo * corrente) / (tensao * 0.03)
-    st.metric("Cabo Mínimo", f"{area_cabo_mm2:.2f} mm²")
+    st.subheader("🌱 Biomassa (Manual)")
+    m_bio_m = st.number_input("Massa Resíduo (kg/dia)", value=1000.0, key="t7_m")
+    p_bio_m = st.number_input("Poder Calorífico (MJ/kg)", value=15.0, key="t7_p")
+    tp_bio_m = st.selectbox("Tipo de Processo (Manual)", ["Combustão Direta", "Gaseificação", "Biodigestor"], key="t7_tp")
+    
+    ef_bio_m = 0.25 if tp_bio_m == "Combustão Direta" else (0.35 if tp_bio_m == "Gaseificação" else 0.65)
+    p_bio_kw = ((m_bio_m * p_bio_m * ef_bio_m) / 3.6) / 24
+    st.metric("Potência Contínua", f"{p_bio_kw:.1f} kW")
 
+# ==========================================
+# ABA 8: ELETROTÉCNICA (Completamente Corrigida)
+# ==========================================
 with tab8:
-    st.subheader("Baterias")
-    tipo_bateria = st.selectbox("Tipo", ["Lítio", "Chumbo-Ácido"])
-    tensao_sistema = st.selectbox("Tensão (V)", [12, 24, 48], index=2)
-    capacidade_bateria = st.number_input("Capacidade (Ah)", min_value=50, value=200)
-    dias_autonomia = st.number_input("Dias de Autonomia", min_value=1, max_value=5, value=1)
-    dod = 0.90 if "Lítio" in tipo_bateria else 0.50
-    numero_baterias = math.ceil(((st.session_state.consumo_mensal / 30 * 1000 * dias_autonomia) / (tensao_sistema * dod)) / capacidade_bateria)
-    st.metric("Baterias", f"{numero_baterias} un.")
+    st.subheader("⚡ Eletrotécnica (Manual)")
+    p_ele = st.number_input("Potência (W)", value=1000.0, key="t8_p")
+    v_ele = st.number_input("Tensão (V)", value=220.0, key="t8_v")
+    d_ele = st.number_input("Distância Cabo (m)", value=20.0, key="t8_d")
+    mat_ele = st.selectbox("Material do Cabo", ["Cobre", "Alumínio"], key="t8_mat")
+    
+    i_ele = p_ele / v_ele
+    resist = 0.0172 if mat_ele == "Cobre" else 0.0282
+    area_ele = (2 * resist * d_ele * i_ele) / (v_ele * 0.03)
+    st.metric("Corrente (A)", f"{i_ele:.1f} A")
+    st.metric(f"Cabo Mínimo ({mat_ele})", f"{area_ele:.1f} mm²")
 
+# ==========================================
+# ABA 9: BATERIAS MANUAL (Completamente Corrigida)
+# ==========================================
 with tab9:
-    st.subheader("Inversores")
-    tipo_inversor = st.selectbox("Tipo", ["Híbrido", "Off-Grid", "On-Grid"])
-    carga_total = st.number_input("Carga (W)", min_value=100, value=2000)
-    tem_motores = st.selectbox("Tem motores?", ["Sim", "Não"])
-    p_pico = carga_total * 3.0 if tem_motores == "Sim" else carga_total * 1.25
-    st.metric("Pico do Inversor", f"{p_pico:.0f} W")
+    st.subheader("🔋 Baterias (Manual)")
+    c_bat = st.number_input("Consumo (kWh)", value=300.0, key="t9_c")
+    t_bat = st.selectbox("Tipo de Bateria", ["Lítio", "Chumbo-Ácido"], key="t9_t")
+    v_bat = st.selectbox("Tensão (V)", [12, 24, 48], index=2, key="t9_v")
+    cap_bat = st.number_input("Capacidade (Ah)", value=200, key="t9_cap")
+    d_bat = st.number_input("Dias Autonomia", 1, 5, 1, key="t9_d")
+    
+    dod_bat = 0.9 if t_bat == "Lítio" else 0.5
+    num_bat = math.ceil(((c_bat/30*1000*d_bat)/(v_bat*dod_bat))/cap_bat)
+    st.metric("Baterias Necessárias", f"{num_bat} un.")
 
+# ==========================================
+# ABA 10: INVERSORES (Completamente Corrigida)
+# ==========================================
 with tab10:
-    st.subheader("🛠️ Gestão de Manutenção Sincronizada")
-    sistema_alvo = st.selectbox("Selecione o Sistema Alvo", ["Solar Fotovoltaico", "Solar Térmico", "Eólico", "Hídrico", "Biomassa"])
-    tipo_manutencao = st.selectbox("Tipo de Manutenção", ["Preventiva", "Corretiva", "Preditiva"])
+    st.subheader("🔌 Inversores (Manual)")
+    carga_inv = st.number_input("Carga Contínua (W)", value=2000.0, key="t10_c")
+    tp_inv = st.selectbox("Tipo de Inversor", ["Híbrido", "Off-Grid", "On-Grid"], key="t10_tp")
+    mot_inv = st.selectbox("Tem motores?", ["Sim", "Não"], key="t10_m")
     
-    st.markdown(f"### 📋 Checklist: {sistema_alvo} ({tipo_manutencao})")
-    
-    if sistema_alvo == "Solar Fotovoltaico":
-        if "Preventiva" in tipo_manutencao:
-            st.checkbox("Limpeza dos painéis (remoção de pó e areia)", value=True)
-            st.checkbox("Verificação de cabos e conectores MC4")
-            st.checkbox("Inspeção visual de fissuras nos painéis")
-        else:
-            st.checkbox("Substituição de inversores avariados")
-            st.checkbox("Reparação de cabos danificados")
-    elif sistema_alvo == "Solar Térmico":
-        if "Preventiva" in tipo_manutencao:
-            st.checkbox("Limpeza dos vidros dos coletores solares", value=True)
-            st.checkbox("Verificação de fugas no circuito de água/glicol")
-            st.checkbox("Purga do ar do sistema (sangria)")
-        else:
-            st.checkbox("Substituição de tubos danificados pelo calor")
-            st.checkbox("Reparação de coletores fissurados")
-    elif sistema_alvo == "Eólico":
-        if "Preventiva" in tipo_manutencao:
-            st.checkbox("Lubrificação do multiplicador e rolamentos", value=True)
-            st.checkbox("Inspeção visual das pás (fissuras, erosão)")
-            st.checkbox("Aperto dos parafusos da torre")
-    elif sistema_alvo == "Hídrico":
-        if "Preventiva" in tipo_manutencao:
-            st.checkbox("Limpeza das grades de captação (remoção de lixo)", value=True)
-            st.checkbox("Verificação de fugas de óleo na turbina")
-            st.checkbox("Inspeção dos selos mecânicos")
-    elif sistema_alvo == "Biomassa":
-        if "Preventiva" in tipo_manutencao:
-            st.checkbox("Limpeza da fuligem na caldeira", value=True)
-            st.checkbox("Verificação do sistema de alimentação de combustível")
-            st.checkbox("Análise do pH do biodigestor")
+    p_inv = carga_inv * (3.0 if mot_inv == "Sim" else 1.25)
+    st.metric(f"Potência do Inversor ({tp_inv})", f"{p_inv:.0f} W")
 
+# ==========================================
+# ABA 11: GERADORES (Completamente Corrigida)
+# ==========================================
 with tab11:
-    st.subheader("📚 Guia Técnico e Boas Práticas")
-    with st.expander("☀️ Solar Fotovoltaico"):
-        st.write("Em Angola, os painéis apontam para o Norte com inclinação igual à latitude + 5°. Evite sombreamento parcial.")
-    with st.expander("🌡️ Solar Térmico (Aquecimento de Água)"):
-        st.write("Utilize coletores de tubos a vácuo para climas mais frios e coletores planos para climas quentes. Inclinação ideal: Latitude + 10°.")
-    with st.expander("🌬️ Energia Eólica"):
-        st.write("A potência eólica cresce ao cubo da velocidade do vento. Instale a turbina a uma altura mínima de 10m.")
-    with st.expander("💧 Energia Hídrica"):
-        st.write("Turbina Pelton (Alta queda), Francis (Média) e Kaplan (Baixa queda). Limpeza do canal de adução é crítica.")
-    with st.expander("🔋 Armazenamento (Baterias)"):
-        st.write("Baterias de Lítio suportam até 90% de descarga. Baterias de Chumbo-Ácido apenas 50%.")
+    st.subheader("⚙️ Geradores (Manual)")
+    p_ger = st.number_input("Carga Pico (kW)", value=5.0, key="t11_p")
+    tp_ger = st.selectbox("Tipo de Gerador", ["Diesel / Gasóleo", "Gasolina", "Gás Natural / Biogás"], key="t11_tp")
+    tensao_ger = st.selectbox("Tensão do Gerador", ["Monofásico (220V)", "Trifásico (380V)"], key="t11_tensao")
+    fp_ger = st.number_input("Fator Potência", value=0.8, key="t11_fp")
+    
+    kva_ger = (p_ger * 1.25) / fp_ger
+    st.metric("Gerador Necessário", f"{kva_ger:.1f} kVA")
+    st.info(f"💡 Nota: Para um gerador **{tp_ger}** do tipo **{tensao_ger}**, certifique-se de que o quadro elétrico tem as devidas proteções diferenciais.")
 
+# ==========================================
+# ABA 12: MANUTENÇÃO
+# ==========================================
 with tab12:
-    st.subheader("💼 Meu Negócio (Simulador)")
-    st.write("Projeção de faturamento com base nas licenças vendidas.")
-    st.metric("Faturamento Estimado (Ano 1)", "$ 3.000,00 (Base de 5 empresas)")
+    st.subheader("🛠️ Gestão de Manutenção Sincronizada")
+    sist_man = st.selectbox("Sistema Alvo", ["Solar Fotovoltaico", "Térmico", "Eólico", "Hídrico", "Biomassa", "Gerador"], key="t12_s")
+    
+    if sist_man == "Solar Fotovoltaico":
+        tp_man = st.selectbox("Tecnologia do Painel", ["Monocristalino", "Policristalino", "Filme Fino"], key="t12_tp")
+        if tp_man == "Monocristalino": st.info("💡 **Dica:** Verifique conectores MC4 para evitar 'Hot Spots'.")
+        st.checkbox("Limpeza dos painéis", key="chk_s1")
+        st.checkbox("Verificação de cabos", key="chk_s2")
+    elif sist_man == "Térmico":
+        tp_man_t = st.selectbox("Tipo de Coletor", ["Plano", "Tubo a Vácuo"], key="t12_term_tp")
+        if tp_man_t == "Plano": st.info("💡 **Dica:** Verifique o isolamento térmico da caixa.")
+        st.checkbox("Limpeza dos vidros", key="chk_t1")
+        st.checkbox("Verificação de fugas", key="chk_t2")
+    elif sist_man == "Eólico":
+        tp_man_e = st.selectbox("Tipo de Turbina", ["Eixo Horizontal", "Eixo Vertical"], key="t12_eol_tp")
+        if tp_man_e == "Eixo Horizontal": st.info("💡 **Dica:** Verifique o sistema de orientação.")
+        st.checkbox("Lubrificação", key="chk_e1")
+        st.checkbox("Inspeção das pás", key="chk_e2")
+    elif sist_man == "Hídrico":
+        tp_man_h = st.selectbox("Tipo de Turbina", ["Pelton", "Francis", "Kaplan"], key="t12_hid_tp")
+        if tp_man_h == "Pelton": st.info("💡 **Dica:** Verifique desgaste das pás.")
+        st.checkbox("Limpeza das grades", key="chk_h1")
+        st.checkbox("Fugas de óleo", key="chk_h2")
+    elif sist_man == "Biomassa":
+        tp_man_b = st.selectbox("Tipo de Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"], key="t12_bio_tp")
+        if tp_man_b == "Combustão Direta": st.info("💡 **Dica:** Limpeza da fuligem.")
+        st.checkbox("Limpeza geral", key="chk_b1")
+    elif sist_man == "Gerador":
+        tp_man_g = st.selectbox("Tipo de Gerador", ["Diesel", "Gasolina", "Gás"], key="t12_ger_tp")
+        if tp_man_g == "Diesel": st.info("💡 **Dica:** Drene a água do filtro.")
+        st.checkbox("Verificar óleo", key="chk_g1")
+        st.checkbox("Filtro de ar", key="chk_g2")
 
-# --- BARRA LATERAL CORRIGIDA (Exatamente como a Foto 5) ---
+# ==========================================
+# ABA 13: PROJETO EXECUTIVO (Dinâmico com Inputs)
+# ==========================================
+with tab13:
+    st.subheader("🔧 Projeto Executivo e Detalhamento de Campo")
+    tipo_exec = st.selectbox("Selecione o Sistema", ["Solar Fotovoltaico", "Eólico", "Hídrico", "Térmico", "Biomassa"], key="t13_t")
+
+    if tipo_exec == "Solar Fotovoltaico":
+        tp_painel_exec = st.selectbox("Tipo de Painel", ["Monocristalino", "Policristalino", "Filme Fino"], key="t13_tp")
+        voc = st.number_input("Voc (V)", value=49.5, key="t13_voc")
+        vmax = st.number_input("Tensão Max Inv (V)", value=500, key="t13_vmax")
+        max_serie = math.floor(vmax / voc)
+        st.success(f"**String:** Máximo de {max_serie} painéis em série (Painel {tp_painel_exec}).")
+        st.info("**Cabo DC:** Utilize cabo solar de 6 mm².")
+        st.warning("**Proteções:** Disjuntor DC e AC, DPS e Haste de Terra.")
+
+    elif tipo_exec == "Térmico":
+        tp_col_exec = st.selectbox("Tipo de Coletor", ["Plano", "Tubo a Vácuo"], key="t13_term_tp")
+        area_col = st.number_input("Área Total de Coletores (m²)", value=4.0, key="t13_term_area")
+        
+        tubo = "22mm" if area_col <= 10 else "28mm"
+        vaso = 18 if area_col <= 5 else 24
+        
+        st.success(f"**Tubagem:** Tubo de cobre de {tubo} para o circuito primário (glicol).")
+        st.info(f"**Vaso de Expansão:** Recomendado vaso de {vaso} Litros para {area_col} m².")
+        st.warning(f"**Proteções:** Válvula de segurança de 6 bar, purgador de ar automático. (Para coletor {tp_col_exec}).")
+
+    elif tipo_exec == "Eólico":
+        tp_turb_exec = st.selectbox("Tipo de Turbina", ["Eixo Horizontal", "Eixo Vertical"], key="t13_eol_tp")
+        pot_eol_exec = st.number_input("Potência da Turbina (kW)", value=2.0, key="t13_eol_pot")
+        dist_eol_exec = st.number_input("Distância Turbina-Quadro (m)", value=30.0, key="t13_eol_dist")
+        
+        st.success("**Cabo DC:** Cabo com proteção UV (solar).")
+        st.warning(f"**Proteções:** Controlador de carga (Dumpload) obrigatório. Para turbina {tp_turb_exec}, utilize DPS DC.")
+
+    elif tipo_exec == "Hídrico":
+        tp_hid_exec = st.selectbox("Tipo de Turbina", ["Pelton", "Francis", "Kaplan"], key="t13_hid_tp")
+        pot_hid_exec = st.number_input("Potência do Gerador (kW)", value=10.0, key="t13_hid_pot")
+        st.success("**Cabo AC:** Cabo trifásico (380V).")
+        st.warning(f"**Proteções:** Disjuntor tripolar, DPS, regulador AVR. (Turbina {tp_hid_exec}).")
+
+    elif tipo_exec == "Biomassa":
+        tp_bio_exec = st.selectbox("Tipo de Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"], key="t13_bio_tp")
+        st.success("**Gás:** Tubo PEAD/Inox.")
+        st.warning(f"**Proteções:** Válvula corta-fogo, filtro H2S. (Processo: {tp_bio_exec}).")
+
+# ==========================================
+# ABA 14: NEGÓCIO
+# ==========================================
+with tab14:
+    st.subheader("💼 Meu Negócio")
+    st.metric("Faturamento Estimado (Ano 1)", "$ 3.000,00")
+
+# --- BARRA LATERAL CORRIGIDA ---
 st.sidebar.title("EcoRenováveis Pro")
 st.sidebar.info(
     "Desenvolvido por **Adão Cassessa**.\n\n"
