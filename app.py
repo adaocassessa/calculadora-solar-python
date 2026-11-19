@@ -132,7 +132,7 @@ with tab2:
     st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}), zoom=12)
 
 # ==========================================
-# ABA 3: SOLAR MANUAL (Completamente Corrigida)
+# ABA 3: SOLAR MANUAL
 # ==========================================
 with tab3:
     st.subheader("☀️ Dimensionamento Solar Fotovoltaico (Manual)")
@@ -153,7 +153,7 @@ with tab3:
     st.metric("Painéis Necessários", f"{num_sol} un. (Área total: {num_sol*a_sol:.1f} m²)")
 
 # ==========================================
-# ABA 4: TÉRMICA MANUAL (Completamente Corrigida)
+# ABA 4: TÉRMICA MANUAL
 # ==========================================
 with tab4:
     st.subheader("🌡️ Energia Térmica (Manual)")
@@ -170,7 +170,7 @@ with tab4:
     st.metric("Área de Coletores", f"{area_term:.1f} m²")
 
 # ==========================================
-# ABA 5: EÓLICA MANUAL (Completamente Corrigida)
+# ABA 5: EÓLICA MANUAL
 # ==========================================
 with tab5:
     st.subheader("🌬️ Energia Eólica (Manual)")
@@ -182,7 +182,7 @@ with tab5:
     st.metric("Potência Gerada", f"{p_eol_m:.0f} W")
 
 # ==========================================
-# ABA 6: HÍDRICA MANUAL (Completamente Corrigida)
+# ABA 6: HÍDRICA MANUAL
 # ==========================================
 with tab6:
     st.subheader("💧 Energia Hídrica (Manual)")
@@ -195,7 +195,7 @@ with tab6:
     st.metric("Potência Gerada", f"{(p_hid_m/1000):.1f} kW")
 
 # ==========================================
-# ABA 7: BIOMASSA MANUAL (Completamente Corrigida)
+# ABA 7: BIOMASSA MANUAL
 # ==========================================
 with tab7:
     st.subheader("🌱 Biomassa (Manual)")
@@ -208,23 +208,52 @@ with tab7:
     st.metric("Potência Contínua", f"{p_bio_kw:.1f} kW")
 
 # ==========================================
-# ABA 8: ELETROTÉCNICA (Completamente Corrigida)
+# ABA 8: ELETROTÉCNICA (Com Corrente Contínua e Alternada + Frequência)
 # ==========================================
 with tab8:
-    st.subheader("⚡ Eletrotécnica (Manual)")
-    p_ele = st.number_input("Potência (W)", value=1000.0, key="t8_p")
-    v_ele = st.number_input("Tensão (V)", value=220.0, key="t8_v")
-    d_ele = st.number_input("Distância Cabo (m)", value=20.0, key="t8_d")
-    mat_ele = st.selectbox("Material do Cabo", ["Cobre", "Alumínio"], key="t8_mat")
+    st.subheader("⚡ Eletrotécnica (Lei de Ohm e Resistência)")
     
-    i_ele = p_ele / v_ele
-    resist = 0.0172 if mat_ele == "Cobre" else 0.0282
-    area_ele = (2 * resist * d_ele * i_ele) / (v_ele * 0.03)
-    st.metric("Corrente (A)", f"{i_ele:.1f} A")
-    st.metric(f"Cabo Mínimo ({mat_ele})", f"{area_ele:.1f} mm²")
+    tipo_corrente = st.selectbox("Tipo de Corrente", ["Corrente Contínua (DC - Painéis/Baterias)", "Corrente Alternada Monofásica (AC - 220V)", "Corrente Alternada Trifásica (AC - 380V)"], key="t8_tipo_c")
+    frequencia = st.selectbox("Frequência da Rede", ["50 Hz (Angola / Europa)", "60 Hz (Brasil / EUA)"], key="t8_freq")
+    
+    col_e1, col_e2 = st.columns(2)
+    with col_e1:
+        st.markdown("**Dados do Circuito**")
+        p_ele = st.number_input("Potência do Equipamento (W)", value=1000.0, key="t8_p")
+        v_ele = st.number_input("Tensão do Sistema (V)", value=220.0, key="t8_v")
+        d_ele = st.number_input("Distância do Cabo (m)", value=20.0, key="t8_d")
+        mat_ele = st.selectbox("Material do Cabo", ["Cobre", "Alumínio"], key="t8_mat")
+        
+    with col_e2:
+        st.markdown("**Resultados da Lei de Ohm**")
+        if "Trifásica" in tipo_corrente:
+            i_ele = p_ele / (math.sqrt(3) * v_ele * 0.8)
+        else:
+            i_ele = p_ele / v_ele
+            
+        st.metric("Corrente Elétrica (I)", f"{i_ele:.2f} A")
+        r_carga = v_ele / i_ele if i_ele > 0 else 0
+        st.metric("Resistência da Carga (R)", f"{r_carga:.2f} Ω")
+
+    st.divider()
+    st.markdown("### Dimensionamento do Cabo e Queda de Tensão")
+    resistividade = 0.0172 if mat_ele == "Cobre" else 0.0282
+    
+    if "Trifásica" in tipo_corrente:
+        area_ele = (math.sqrt(3) * resistividade * d_ele * i_ele) / (v_ele * 0.03)
+    else:
+        area_ele = (2 * resistividade * d_ele * i_ele) / (v_ele * 0.03)
+        
+    r_cabo = (2 * resistividade * d_ele) / area_ele if area_ele > 0 else 0
+    
+    c_res1, c_res2 = st.columns(2)
+    c_res1.metric(f"Cabo Mínimo ({mat_ele})", f"{area_ele:.2f} mm²")
+    c_res2.metric("Resistência do Cabo", f"{r_cabo:.3f} Ω")
+    
+    st.info(f"💡 **Nota Técnica:** Cálculo efetuado para **{tipo_corrente}** a **{frequencia}**. A resistência do cabo de {area_ele:.1f}mm² ao longo de {d_ele}m é de {r_cabo:.3f} Ω (Queda de Tensão máx 3%).")
 
 # ==========================================
-# ABA 9: BATERIAS MANUAL (Completamente Corrigida)
+# ABA 9: BATERIAS MANUAL
 # ==========================================
 with tab9:
     st.subheader("🔋 Baterias (Manual)")
@@ -233,25 +262,23 @@ with tab9:
     v_bat = st.selectbox("Tensão (V)", [12, 24, 48], index=2, key="t9_v")
     cap_bat = st.number_input("Capacidade (Ah)", value=200, key="t9_cap")
     d_bat = st.number_input("Dias Autonomia", 1, 5, 1, key="t9_d")
-    
     dod_bat = 0.9 if t_bat == "Lítio" else 0.5
     num_bat = math.ceil(((c_bat/30*1000*d_bat)/(v_bat*dod_bat))/cap_bat)
     st.metric("Baterias Necessárias", f"{num_bat} un.")
 
 # ==========================================
-# ABA 10: INVERSORES (Completamente Corrigida)
+# ABA 10: INVERSORES
 # ==========================================
 with tab10:
     st.subheader("🔌 Inversores (Manual)")
     carga_inv = st.number_input("Carga Contínua (W)", value=2000.0, key="t10_c")
     tp_inv = st.selectbox("Tipo de Inversor", ["Híbrido", "Off-Grid", "On-Grid"], key="t10_tp")
     mot_inv = st.selectbox("Tem motores?", ["Sim", "Não"], key="t10_m")
-    
     p_inv = carga_inv * (3.0 if mot_inv == "Sim" else 1.25)
     st.metric(f"Potência do Inversor ({tp_inv})", f"{p_inv:.0f} W")
 
 # ==========================================
-# ABA 11: GERADORES (Completamente Corrigida)
+# ABA 11: GERADORES
 # ==========================================
 with tab11:
     st.subheader("⚙️ Geradores (Manual)")
@@ -259,7 +286,6 @@ with tab11:
     tp_ger = st.selectbox("Tipo de Gerador", ["Diesel / Gasóleo", "Gasolina", "Gás Natural / Biogás"], key="t11_tp")
     tensao_ger = st.selectbox("Tensão do Gerador", ["Monofásico (220V)", "Trifásico (380V)"], key="t11_tensao")
     fp_ger = st.number_input("Fator Potência", value=0.8, key="t11_fp")
-    
     kva_ger = (p_ger * 1.25) / fp_ger
     st.metric("Gerador Necessário", f"{kva_ger:.1f} kVA")
     st.info(f"💡 Nota: Para um gerador **{tp_ger}** do tipo **{tensao_ger}**, certifique-se de que o quadro elétrico tem as devidas proteções diferenciais.")
@@ -302,7 +328,7 @@ with tab12:
         st.checkbox("Filtro de ar", key="chk_g2")
 
 # ==========================================
-# ABA 13: PROJETO EXECUTIVO (Dinâmico com Inputs)
+# ABA 13: PROJETO EXECUTIVO (Com Resistência em TODAS as Fontes)
 # ==========================================
 with tab13:
     st.subheader("🔧 Projeto Executivo e Detalhamento de Campo")
@@ -310,51 +336,74 @@ with tab13:
 
     if tipo_exec == "Solar Fotovoltaico":
         tp_painel_exec = st.selectbox("Tipo de Painel", ["Monocristalino", "Policristalino", "Filme Fino"], key="t13_tp")
-        voc = st.number_input("Voc (V)", value=49.5, key="t13_voc")
+        voc = st.number_input("Voc do Painel (V)", value=49.5, key="t13_voc")
         vmax = st.number_input("Tensão Max Inv (V)", value=500, key="t13_vmax")
         max_serie = math.floor(vmax / voc)
         st.success(f"**String:** Máximo de {max_serie} painéis em série (Painel {tp_painel_exec}).")
         st.info("**Cabo DC:** Utilize cabo solar de 6 mm².")
-        st.warning("**Proteções:** Disjuntor DC e AC, DPS e Haste de Terra.")
+        st.warning("**Proteções:** Disjuntor DC e AC, DPS.")
+        st.error("**Obrigatório (Segurança):** Instalação de Haste de Terra com resistência máxima de **10 Ω** para proteção contra descargas atmosféricas.")
 
     elif tipo_exec == "Térmico":
         tp_col_exec = st.selectbox("Tipo de Coletor", ["Plano", "Tubo a Vácuo"], key="t13_term_tp")
         area_col = st.number_input("Área Total de Coletores (m²)", value=4.0, key="t13_term_area")
+        dist_term = st.number_input("Distância até ao Depósito (m)", value=10.0, key="t13_term_dist")
         
-        tubo = "22mm" if area_col <= 10 else "28mm"
+        tubo = "22mm" if dist_term <= 15 else "28mm"
         vaso = 18 if area_col <= 5 else 24
         
         st.success(f"**Tubagem:** Tubo de cobre de {tubo} para o circuito primário (glicol).")
         st.info(f"**Vaso de Expansão:** Recomendado vaso de {vaso} Litros para {area_col} m².")
         st.warning(f"**Proteções:** Válvula de segurança de 6 bar, purgador de ar automático. (Para coletor {tp_col_exec}).")
+        st.error("**Obrigatório (Segurança):** Caso o sistema tenha bombas de circulação elétricas, estas devem ter ligação à Haste de Terra com resistência máxima de **10 Ω**.")
 
     elif tipo_exec == "Eólico":
         tp_turb_exec = st.selectbox("Tipo de Turbina", ["Eixo Horizontal", "Eixo Vertical"], key="t13_eol_tp")
         pot_eol_exec = st.number_input("Potência da Turbina (kW)", value=2.0, key="t13_eol_pot")
-        dist_eol_exec = st.number_input("Distância Turbina-Quadro (m)", value=30.0, key="t13_eol_dist")
+        v_eol_exec = st.number_input("Tensão do Sistema (V)", value=48.0, key="t13_eol_v")
+        dist_eol_exec = st.number_input("Distância Turbina-Inversor (m)", value=30.0, key="t13_eol_dist")
         
-        st.success("**Cabo DC:** Cabo com proteção UV (solar).")
+        corrente_eol = (pot_eol_exec * 1000) / v_eol_exec
+        area_cabo_eol = (2 * 0.0172 * dist_eol_exec * corrente_eol) / (v_eol_exec * 0.03)
+        
+        st.success(f"**Cabo DC:** Cabo de {math.ceil(area_cabo_eol)} mm² com proteção UV (solar).")
         st.warning(f"**Proteções:** Controlador de carga (Dumpload) obrigatório. Para turbina {tp_turb_exec}, utilize DPS DC.")
+        st.error("**Obrigatório (Segurança):** Instalação de Haste de Terra na torre da turbina e no quadro elétrico com resistência máxima de **10 Ω**.")
 
     elif tipo_exec == "Hídrico":
         tp_hid_exec = st.selectbox("Tipo de Turbina", ["Pelton", "Francis", "Kaplan"], key="t13_hid_tp")
         pot_hid_exec = st.number_input("Potência do Gerador (kW)", value=10.0, key="t13_hid_pot")
-        st.success("**Cabo AC:** Cabo trifásico (380V).")
+        v_hid_exec = st.number_input("Tensão de Saída AC (V)", value=380.0, key="t13_hid_v")
+        dist_hid_exec = st.number_input("Distância até ao Quadro (m)", value=50.0, key="t13_hid_dist")
+        
+        corrente_hid = (pot_hid_exec * 1000) / (math.sqrt(3) * v_hid_exec * 0.8)
+        area_cabo_hid = (math.sqrt(3) * 0.0172 * dist_hid_exec * corrente_hid) / (v_hid_exec * 0.03)
+        
+        st.success(f"**Cabo AC:** Cabo trifásico de {math.ceil(area_cabo_hid)} mm².")
         st.warning(f"**Proteções:** Disjuntor tripolar, DPS, regulador AVR. (Turbina {tp_hid_exec}).")
+        st.error("**Obrigatório (Segurança):** Instalação de Haste de Terra para o gerador e quadro elétrico com resistência máxima de **10 Ω**.")
 
     elif tipo_exec == "Biomassa":
         tp_bio_exec = st.selectbox("Tipo de Processo", ["Combustão Direta", "Gaseificação", "Biodigestor"], key="t13_bio_tp")
-        st.success("**Gás:** Tubo PEAD/Inox.")
-        st.warning(f"**Proteções:** Válvula corta-fogo, filtro H2S. (Processo: {tp_bio_exec}).")
+        pot_bio_exec = st.number_input("Potência do Gerador (kW)", value=5.0, key="t13_bio_pot")
+        dist_bio_exec = st.number_input("Distância até ao Motor/Gerador (m)", value=15.0, key="t13_bio_dist")
+        
+        if "Biodigestor" in tp_bio_exec:
+            st.success(f"**Tubagem:** Tubo PEAD ou Inox de 50mm para o biogás, com distância de {dist_bio_exec}m.")
+            st.warning(f"**Proteções:** Válvula corta-fogo, filtro de H2S (ácido sulfídrico) e purga de condensado.")
+        else:
+            st.success(f"**Tubagem:** Sistema de alimentação mecânica para resíduos sólidos.")
+            st.warning(f"**Proteções:** Válvula de alívio de pressão na caldeira/gaseificador e sistema de exaustão de gases.")
+        st.error("**Obrigatório (Segurança):** Ligação à terra de todas as massas metálicas (motor, caldeira, tubagens) com resistência máxima de **10 Ω** e proteção contra eletricidade estática.")
 
 # ==========================================
 # ABA 14: NEGÓCIO
 # ==========================================
 with tab14:
-    st.subheader("💼 Meu Negócio")
-    st.metric("Faturamento Estimado (Ano 1)", "$ 3.000,00")
+    st.subheader("💼 Meu Negócio (Simulador)")
+    st.metric("Faturamento Estimado (Ano 1)", "$ 3.000,00 (Base de 5 empresas)")
 
-# --- BARRA LATERAL CORRIGIDA ---
+# --- BARRA LATERAL ---
 st.sidebar.title("EcoRenováveis Pro")
 st.sidebar.info(
     "Desenvolvido por **Adão Cassessa**.\n\n"
