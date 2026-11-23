@@ -556,7 +556,7 @@ with tab24:
 st.sidebar.title("EcoRenováveis Pro")
 st.sidebar.info(
     "Desenvolvido por **Adão Cassessa**.\n\n"
-    "Engenharia Total: Renováveis, Elétrica, Civil e Mecânica.\n\n"
+    "Engenharia Total: Renováveis, Elétrica, Civil e Mecânica Automação e Indústria.\n\n"
     "Contacto: +244 946 419 656"
 )
 st.sidebar.caption("© 2026 EcoRenováveis. Todos os direitos reservados.")
